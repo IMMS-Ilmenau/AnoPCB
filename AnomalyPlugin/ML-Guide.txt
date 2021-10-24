@@ -1,0 +1,56 @@
+This is a guide about the model configuration and training functionality of the plugin.
+
+1. Designing a ML-model
+
+The server expects a tensorflow model with the following input shape: (slice width, slice height, 8)
+The input to the model is a slice taken through the PCBs layers, the 3rd dimension of the input encodes
+the signal type of any sliced component or track as a one-hot vector.
+The model needs to be autoencoder-like to perform anomaly detection. The model needs 3 outputs of the
+following shapes:
+
+reconstructed: (slice width, slice height, 8)
+latent: (latent_size)
+MSE: scalar
+
+The outputs have to be in that exact order. "reconstructed" is the output of the autoencoder.
+"latent" is the output of the bottleneck layer at the heart of the autoencoder.
+"MSE" is the mean squared error between the input and "reconstructed" for each individual slice.
+If the model is compiled and saved as a h5 before sending it to the server it needs the following
+compile parameters: loss = [loss-function, None, None] and loss_weights = [1.0, 0.0, 0.0],
+because we only want to train on the "reconstructed" output. If the model send to the server via the
+"send model" function in the "model configuration" GUI as an uncompiled json-config those parameters
+will be applied automatically. For the loss-function we recommend BCE.
+An example for a working ML-model is given in the Autoencoder.py file in the Server directory.
+
+
+2. Creating datasets
+
+Datasets can be created via the "train model" GUI with the "Send slices" button. Slices are taken
+from the current Pcbnew project. If the "Augment" button is pressed the dataset will be augmented
+(duplicate slices removed, slices mirrored). The datasets name follow the following pattern:
+{PCB name}_{amount of slices}_{width of slices}_{height of slices}.
+If the dataset has been augmented an "_a" is added to the end of the name.
+
+
+3. Training the model
+
+The model can be trained on datasets that have been send to the server. The datasets used for
+training and validation during training can be chosen in the corresponding lists. The two sets
+have to be the same or disjoint. The model is trained on a random batch from the chosen datasets
+of the chosen batch size. If datasets for training and validation are the same they will be split.
+The following only applies in that case:
+If the combined batch sizes for training and validation are larger than the size of the datasets
+the dataset for validation will be made smaller. If the batch size for training alone is larger than
+the size of the datasets no validation will be performed.
+If datasets for training and validation are disjoint and a batch size is larger than the datasets
+the entire dataset will be used, which is recommended.
+The model will train for the chosen number of epochs. One epoch means training on 5000 samples,
+then validating. If the validation loss rises for 5 epochs in succession, the training is
+stopped (overfitting). Otherwise the training will be stopped after the chosen amount of minutes
+or epochs (which ever is reached first).
+
+4. Testing the model
+
+The model can be tested on datasets that have been send to the server. The datasets used for
+testing can be chosen in the corresponding list. The model will be evaluated on a batch of the chosen
+size taken from the datasets and the loss is returned.

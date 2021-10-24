@@ -1,0 +1,138 @@
+# Requests: as JSON Objects
+# put: 
+# send_model
+{
+    "type" : 0,
+    "name" : "send_model",
+    "model": 'model-name',
+    "kind" : 'file format',
+    "data" : 'model config',
+    "comp" : 'dict containing compile parameters'
+}
+# response: 204
+
+# delete_model
+{
+    "type" : 7,
+    "name" : "delete_model",
+    "model": 'model-name',
+}
+# response: 204
+
+# send_slices
+{
+    "type" : 8,
+    "name" : "send_slices",
+    "board": 'name of PCB',
+    "count": 'amount of slices',
+    "x_dim": 'width of slice',
+    "y_dim": 'height of slice',
+    "aug"  : 'augment flag',
+    "data" : 'list of slices'
+}
+# response: 204
+
+# delete_slices
+{
+    "type" : 9,
+    "name" : "delete_slices",
+    "board": 'name of dataset'
+}
+# response 204
+
+# remove_session
+{
+    "type" : 13,
+    "name" : "remove_session",
+    "session": session_number
+}
+# response 204
+
+
+# get: 
+# models
+{
+    "type" : 1,
+    "name" : "models"
+}
+# response: 200
+
+# active
+{
+    "type" : 5,
+    "name" : "active",
+    "session": session_number
+}
+# response: 200
+
+# busy
+{
+    "type" : 6,
+    "name" : "busy"
+}
+# response: 204
+
+# get_datasets
+{
+    "type" : 10,
+    "name" : "get_data"
+}
+# response: 200
+
+
+# post: 
+# train / new_train
+{
+    "type" : 2,
+    "name" : "train",
+    "datasets"  : 'dataset names',
+    "batch_size": 'batch sizes',
+    "train_time": 'train times',
+    "session": session_number
+}
+# response: 200
+
+# evaluate
+{
+    "type" : 3,
+    "name" : "evaluate",
+    "data" : 'input-slices',
+    "shape": ('x', 'y'),
+    "session": session_number
+}
+# response: 200
+
+# serve
+{
+    "type" : 4,
+    "name" : "serve",
+    "model": 'model-name',
+    "session": session_number
+}
+# response: 204
+
+# test
+{
+    "type" : 11,
+    "name" : "test",
+    "datasets"  : 'dataset names',
+    "batch_size": 'batch size',
+    "session": session_number
+}
+# response: 200
+
+# get_session
+{
+    "type" : 12,
+    "name" : "get_session"
+}
+# response: 200
+
+# all data MUST be json encoded before sending
+
+# response jsons:
+#
+# if response == 200:
+#     {"data" : 'data'}
+# if response == 204 or 400 or 500:
+#     None

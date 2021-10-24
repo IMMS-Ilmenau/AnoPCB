@@ -1,0 +1,7 @@
+docker
+scikit-image
+scikit-learn
+seaborn
+numba
+numpy
+ordered_enum

@@ -1,0 +1,4 @@
+#!/usr/bin/env python
+import Server.AnomalyServer
+
+Server.AnomalyServer.main2()

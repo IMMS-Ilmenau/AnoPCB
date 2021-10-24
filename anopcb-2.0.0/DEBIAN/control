@@ -1,0 +1,7 @@
+Package: anopcb
+Version: 2.0.0
+Maintainer: IMMS
+Description: AnoPCB is an anomaly detection plugin for kicad.
+Homepage: https://gitlab.tu-ilmenau.de/gegl0042/anopcb
+Architecture: all
+Depends: kicad, python3-numpy, python3-sklearn, python3-seaborn, python3-numba, python3-docker, python3, python3-distutils, python3-pip

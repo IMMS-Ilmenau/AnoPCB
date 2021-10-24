@@ -1,0 +1,8 @@
+Signal 1 - digital stable
+Signal 2 - digital switching
+Signal 3 - analog
+Signal 4 - analog sensitive
+Signal 5 - supply
+Signal 6 - (analog agressive)
+Signal 7 - (ESD)
+Signal 8 - unknown
