@@ -18,3 +18,14 @@ If you start your server with docker and the plugin and want to apply changes of
 
 For a change to happen, an existing docker container must be deleted beforehand:
 Find the container with `docker container ls -all` and delete it with `docker container rm <container>`.
+
+## Citation 
+If you use AnoPCB in your scientific work, we would appreciate your citation:
+
+```
+@INPROCEEDINGS{AnoPCB,
+  author={Franke, Henning and Kucera, Paul and Kuners, Julian and Reinhold, Tom and Grabmann, Martin and Maeder, Patrick and Seeland, Marco and Glaeser, Georg},
+  booktitle={SMACD / PRIME 2021; International Conference on SMACD and 16th Conference on PRIME}, 
+  title={Trash or Treasure? Machine-learning based PCB layout anomaly detection with AnoPCB}, 
+  year={2021}}
+```
