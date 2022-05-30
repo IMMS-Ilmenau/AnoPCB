@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 
 class ResultDialog(wx.Dialog):
-    """Displays training and validation losses.
-    """
+    """Displays training and validation losses."""
+
     def __init__(self, parent, resp):
         wx.Dialog.__init__(self, parent, size=(400, 400), style=wx.DEFAULT_DIALOG_STYLE)
         resp = resp["data"]
@@ -30,9 +30,9 @@ class ResultDialog(wx.Dialog):
         losses = np.transpose(losses).astype(np.float32)
         legends = []
         if np.any((losses[1] != 0)):
-            legend1, = plt.plot(losses[1], label="Validation loss")
+            (legend1,) = plt.plot(losses[1], label="Validation loss")
             legends.append(legend1)
-        legend2, = plt.plot(losses[0], label="Training loss")
+        (legend2,) = plt.plot(losses[0], label="Training loss")
         legends.append(legend2)
         plt.xlabel("Epochs")
         plt.ylabel("Loss")

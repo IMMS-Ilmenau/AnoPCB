@@ -10,11 +10,12 @@ model_name = "autoencoder_template_x_28_y_4"
 path = os.getcwd()
 path = os.path.join(path, f"{model_name}.h5")
 
+
 def build_model():
     # Input shape: (slice width, slice height, number of signals)
     inp = tf.keras.Input((28, 4, 8))
     noise = ls.GaussianNoise(0.1)
-    
+
     # Encoder parts
     pool = ls.MaxPool2D()
     conv1 = ls.Conv2D(8, (3, 3), padding="same", activation="relu", use_bias=False)
@@ -32,13 +33,18 @@ def build_model():
     sample = ls.UpSampling2D()
     dense = ls.Dense(224, activation="relu")
     reshape = ls.Reshape((7, 1, 32))
-    deconv1 = ls.Conv2DTranspose(32, (3, 3), padding="same", activation="relu", use_bias=False)
+    deconv1 = ls.Conv2DTranspose(
+        32, (3, 3), padding="same", activation="relu", use_bias=False
+    )
     norm4 = ls.BatchNormalization()
-    deconv2 = ls.Conv2DTranspose(16, (3, 3), padding="same", activation="relu", use_bias=False)
+    deconv2 = ls.Conv2DTranspose(
+        16, (3, 3), padding="same", activation="relu", use_bias=False
+    )
     norm5 = ls.BatchNormalization()
-    deconv3 = ls.Conv2DTranspose(8, (3, 3), padding="same", activation="sigmoid", use_bias=False)
+    deconv3 = ls.Conv2DTranspose(
+        8, (3, 3), padding="same", activation="sigmoid", use_bias=False
+    )
     norm6 = ls.BatchNormalization()
-
 
     # Dropout to be applied throughout the network
     dropout = ls.Dropout(0.1)
@@ -72,16 +78,15 @@ def build_model():
     reconstructed = x
 
     # MSE computed for each slice
-    mse = tf.math.reduce_mean((inp - reconstructed)**2, axis=[1, 2, 3])
+    mse = tf.math.reduce_mean((inp - reconstructed) ** 2, axis=[1, 2, 3])
     counts = tf.math.reduce_sum(inp, axis=[1, 2, 3])
     # MSE normalized by the amount of non-zero pixels in the input slice
-    rect_mse = mse / (counts+1)
+    rect_mse = mse / (counts + 1)
 
     # Creating the model
     # Error metric is a combination between rect_mse and mse, the factor of 20 is somewhat arbitrary
     model = tf.keras.Model(
-        inputs=[inp],
-        outputs=[reconstructed, latent, rect_mse*20 + mse]
+        inputs=[inp], outputs=[reconstructed, latent, rect_mse * 20 + mse]
     )
     return model
 
@@ -99,4 +104,4 @@ pcb_autoenc.compile(
 )
 
 # saving the model, server requies h5-format
-pcb_autoenc.save(path, include_optimizer=True, save_format='h5')
+pcb_autoenc.save(path, include_optimizer=True, save_format="h5")
