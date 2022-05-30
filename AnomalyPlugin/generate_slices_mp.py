@@ -1,5 +1,6 @@
 """Method to generate slices from a PCB using multiprocessing"""
 import sys
+
 if __package__ is None or __package__ == "":
     sys.path.append("..")
 import pcbnew
@@ -15,7 +16,11 @@ import json
 
 
 var_dict = {}
-def _worker_init(layers_raw, layers_shape, layercount, width, step_value, board_name, min_x, min_y):
+
+
+def _worker_init(
+    layers_raw, layers_shape, layercount, width, step_value, board_name, min_x, min_y
+):
     """Initializes the workers for multiprocessing."""
     var_dict["layers_raw"] = layers_raw
     var_dict["layers_shape"] = layers_shape
@@ -30,7 +35,9 @@ def _worker_init(layers_raw, layers_shape, layercount, width, step_value, board_
 def _slice_track(start, stop):
     """Slices all tracks in pcbnews TrackList from start to stop"""
     slices = []
-    layers = np.frombuffer(var_dict["layers_raw"], np.uint8).reshape(var_dict["layers_shape"])
+    layers = np.frombuffer(var_dict["layers_raw"], np.uint8).reshape(
+        var_dict["layers_shape"]
+    )
     layercount = var_dict["layercount"]
     width = var_dict["width"]
     step_value = var_dict["step_value"]
@@ -61,7 +68,10 @@ def _slice_track(start, stop):
         end_y = t_yend - min_y
         count = 0
         # cross-section in y- and x-direction depending on the tracks direction
-        actual_t_width = t_width / max(np.sqrt(1-np.square(np.dot(direc, np.array([1, 0])))), np.abs(np.dot(direc, np.array([1, 0]))))
+        actual_t_width = t_width / max(
+            np.sqrt(1 - np.square(np.dot(direc, np.array([1, 0])))),
+            np.abs(np.dot(direc, np.array([1, 0]))),
+        )
 
         if actual_t_width < width:
             # go along the track and create slices
@@ -71,16 +81,30 @@ def _slice_track(start, stop):
                 for i in range(layercount):
                     for j in range(width):
                         try:
-                            slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                            slicerino1[i, j] = layers[
+                                i, int(y_pos), int(x_pos + j - (width // 2))
+                            ]
                         except IndexError:
                             pass
                         try:
-                            slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                            slicerino2[i, j] = layers[
+                                i, int(y_pos + j - (width // 2)), int(x_pos)
+                            ]
                         except IndexError:
                             pass
                 # skio.imsave(name + " track" + " x:" + str(t.get_startx(100000)/10) + " y:" + str(t.get_start_y(100000)/10) + " " + str(count) + ".png", slicerino)
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                        slicerino1.tobytes(),
+                    )
+                )
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                        slicerino2.tobytes(),
+                    )
+                )
                 count = count + 1
                 x_pos = x_pos + direc[0]
                 y_pos = y_pos + direc[1]
@@ -100,16 +124,30 @@ def _slice_track(start, stop):
                 for i in range(layercount):
                     for j in range(width):
                         try:
-                            slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                            slicerino1[i, j] = layers[
+                                i, int(y_pos), int(x_pos + j - (width // 2))
+                            ]
                         except IndexError:
                             pass
                         try:
-                            slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                            slicerino2[i, j] = layers[
+                                i, int(y_pos + j - (width // 2)), int(x_pos)
+                            ]
                         except IndexError:
                             pass
                 # skio.imsave(name + " track" + " x:" + str(t.get_startx(100000)/10) + " y:" + str(t.get_start_y(100000)/10) + " " + str(count) + ".png", slicerino)
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                        slicerino1.tobytes(),
+                    )
+                )
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                        slicerino2.tobytes(),
+                    )
+                )
                 count = count + 1
                 x_pos = x_pos + direc[0]
                 y_pos = y_pos + direc[1]
@@ -124,16 +162,30 @@ def _slice_track(start, stop):
                 for i in range(layercount):
                     for j in range(width):
                         try:
-                            slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                            slicerino1[i, j] = layers[
+                                i, int(y_pos), int(x_pos + j - (width // 2))
+                            ]
                         except IndexError:
                             pass
                         try:
-                            slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                            slicerino2[i, j] = layers[
+                                i, int(y_pos + j - (width // 2)), int(x_pos)
+                            ]
                         except IndexError:
                             pass
                 # skio.imsave(name + " track" + " x:" + str(t.get_startx(100000)/10) + " y:" + str(t.get_start_y(100000)/10) + " " + str(count) + ".png", slicerino)
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                        slicerino1.tobytes(),
+                    )
+                )
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                        slicerino2.tobytes(),
+                    )
+                )
                 count = count + 1
                 x_pos = x_pos + direc[0]
                 y_pos = y_pos + direc[1]
@@ -144,7 +196,9 @@ def _slice_track(start, stop):
 def _slice_via(start, stop):
     """Slices all vias in pcbnews TrackList from start to stop"""
     slices = []
-    layers = np.frombuffer(var_dict["layers_raw"], np.uint8).reshape(var_dict["layers_shape"])
+    layers = np.frombuffer(var_dict["layers_raw"], np.uint8).reshape(
+        var_dict["layers_shape"]
+    )
     layercount = var_dict["layercount"]
     width = var_dict["width"]
     step_value = var_dict["step_value"]
@@ -165,26 +219,55 @@ def _slice_via(start, stop):
             direc = np.array([radius, 0])
             x_pos = v_xpos - min_x
             y_pos = v_ypos - min_y
-            rot = np.array([[np.cos(1/radius), np.sin(1/radius)], [-np.sin(1/radius), np.cos(1/radius)]])
+            rot = np.array(
+                [
+                    [np.cos(1 / radius), np.sin(1 / radius)],
+                    [-np.sin(1 / radius), np.cos(1 / radius)],
+                ]
+            )
             # rotate around via and create slices
-            for _ in range(int(2 * np.pi * radius)+1):
+            for _ in range(int(2 * np.pi * radius) + 1):
                 slicerino1 = np.zeros((layercount, width), np.uint8)
                 slicerino2 = np.zeros((layercount, width), np.uint8)
                 for i in range(layercount):
                     for j in range(width):
                         try:
-                            slicerino1[i, j] = layers[i, int(y_pos+direc[1]), int(x_pos+direc[0]+j-(width//2))]
+                            slicerino1[i, j] = layers[
+                                i,
+                                int(y_pos + direc[1]),
+                                int(x_pos + direc[0] + j - (width // 2)),
+                            ]
                         except IndexError:
                             pass
                         try:
-                            slicerino2[i, j] = layers[i, int(y_pos+direc[1]+j-(width//2)), int(x_pos+direc[0])]
+                            slicerino2[i, j] = layers[
+                                i,
+                                int(y_pos + direc[1] + j - (width // 2)),
+                                int(x_pos + direc[0]),
+                            ]
                         except IndexError:
                             pass
-                slices.append((str(int(x_pos+direc[0])) + "_" + str(int(y_pos+direc[1])) + "_0", slicerino1.tobytes()))
-                slices.append((str(int(x_pos+direc[0])) + "_" + str(int(y_pos+direc[1])) + "_1", slicerino2.tobytes()))
+                slices.append(
+                    (
+                        str(int(x_pos + direc[0]))
+                        + "_"
+                        + str(int(y_pos + direc[1]))
+                        + "_0",
+                        slicerino1.tobytes(),
+                    )
+                )
+                slices.append(
+                    (
+                        str(int(x_pos + direc[0]))
+                        + "_"
+                        + str(int(y_pos + direc[1]))
+                        + "_1",
+                        slicerino2.tobytes(),
+                    )
+                )
                 direc = np.dot(direc, rot)
         else:
-            x_pos = v_xpos - min_x - (v_width//2)
+            x_pos = v_xpos - min_x - (v_width // 2)
             y_pos = v_ypos - min_y
             # create slices through via along the x-axis
             for _ in range(v_width):
@@ -193,35 +276,63 @@ def _slice_via(start, stop):
                 for i in range(layercount):
                     for j in range(width):
                         try:
-                            slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                            slicerino1[i, j] = layers[
+                                i, int(y_pos), int(x_pos + j - (width // 2))
+                            ]
                         except IndexError:
                             pass
                         try:
-                            slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                            slicerino2[i, j] = layers[
+                                i, int(y_pos + j - (width // 2)), int(x_pos)
+                            ]
                         except IndexError:
                             pass
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                        slicerino1.tobytes(),
+                    )
+                )
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                        slicerino2.tobytes(),
+                    )
+                )
                 x_pos = x_pos + 1
 
             # create slices through via along the y-axis
             x_pos = v_xpos - min_x
-            y_pos = v_ypos - min_y - (v_width//2)
+            y_pos = v_ypos - min_y - (v_width // 2)
             for _ in range(v_width):
                 slicerino1 = np.zeros((layercount, width), np.uint8)
                 slicerino2 = np.zeros((layercount, width), np.uint8)
                 for i in range(layercount):
                     for j in range(width):
                         try:
-                            slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                            slicerino1[i, j] = layers[
+                                i, int(y_pos), int(x_pos + j - (width // 2))
+                            ]
                         except IndexError:
                             pass
                         try:
-                            slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                            slicerino2[i, j] = layers[
+                                i, int(y_pos + j - (width // 2)), int(x_pos)
+                            ]
                         except IndexError:
                             pass
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                        slicerino1.tobytes(),
+                    )
+                )
+                slices.append(
+                    (
+                        str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                        slicerino2.tobytes(),
+                    )
+                )
                 y_pos = y_pos + 1
     return slices
 
@@ -229,7 +340,9 @@ def _slice_via(start, stop):
 def _slice_pad(start, stop):
     """Slices all pads in pcbnews TrackList from start to stop"""
     slices = []
-    layers = np.frombuffer(var_dict["layers_raw"], np.uint8).reshape(var_dict["layers_shape"])
+    layers = np.frombuffer(var_dict["layers_raw"], np.uint8).reshape(
+        var_dict["layers_shape"]
+    )
     layercount = var_dict["layercount"]
     width = var_dict["width"]
     step_value = var_dict["step_value"]
@@ -254,25 +367,54 @@ def _slice_pad(start, stop):
                 direc = np.array([radius, 0])
                 x_pos = p_xpos - min_x
                 y_pos = p_ypos - min_y
-                rot = np.array([[np.cos(1/radius), np.sin(1/radius)], [-np.sin(1/radius), np.cos(1/radius)]])
-                for _ in range(int(2 * np.pi * radius)+1):
+                rot = np.array(
+                    [
+                        [np.cos(1 / radius), np.sin(1 / radius)],
+                        [-np.sin(1 / radius), np.cos(1 / radius)],
+                    ]
+                )
+                for _ in range(int(2 * np.pi * radius) + 1):
                     slicerino1 = np.zeros((layercount, width), np.uint8)
                     slicerino2 = np.zeros((layercount, width), np.uint8)
                     for i in range(layercount):
                         for j in range(width):
                             try:
-                                slicerino1[i, j] = layers[i, int(y_pos+direc[1]), int(x_pos+direc[0]+j-(width//2))]
+                                slicerino1[i, j] = layers[
+                                    i,
+                                    int(y_pos + direc[1]),
+                                    int(x_pos + direc[0] + j - (width // 2)),
+                                ]
                             except IndexError:
                                 pass
                             try:
-                                slicerino2[i, j] = layers[i, int(y_pos+direc[1]+j-(width//2)), int(x_pos+direc[0])]
+                                slicerino2[i, j] = layers[
+                                    i,
+                                    int(y_pos + direc[1] + j - (width // 2)),
+                                    int(x_pos + direc[0]),
+                                ]
                             except IndexError:
                                 pass
-                    slices.append((str(int(x_pos+direc[0])) + "_" + str(int(y_pos+direc[1])) + "_0", slicerino1.tobytes()))
-                    slices.append((str(int(x_pos+direc[0])) + "_" + str(int(y_pos+direc[1])) + "_1", slicerino2.tobytes()))
+                    slices.append(
+                        (
+                            str(int(x_pos + direc[0]))
+                            + "_"
+                            + str(int(y_pos + direc[1]))
+                            + "_0",
+                            slicerino1.tobytes(),
+                        )
+                    )
+                    slices.append(
+                        (
+                            str(int(x_pos + direc[0]))
+                            + "_"
+                            + str(int(y_pos + direc[1]))
+                            + "_1",
+                            slicerino2.tobytes(),
+                        )
+                    )
                     direc = np.dot(direc, rot)
             else:
-                x_pos = p_xpos - min_x - (p_xsize//2)
+                x_pos = p_xpos - min_x - (p_xsize // 2)
                 y_pos = p_ypos - min_y
 
                 for _ in range(p_xsize):
@@ -281,51 +423,85 @@ def _slice_pad(start, stop):
                     for i in range(layercount):
                         for j in range(width):
                             try:
-                                slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                                slicerino1[i, j] = layers[
+                                    i, int(y_pos), int(x_pos + j - (width // 2))
+                                ]
                             except IndexError:
                                 pass
                             try:
-                                slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                                slicerino2[i, j] = layers[
+                                    i, int(y_pos + j - (width // 2)), int(x_pos)
+                                ]
                             except IndexError:
                                 pass
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                            slicerino1.tobytes(),
+                        )
+                    )
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                            slicerino2.tobytes(),
+                        )
+                    )
                     x_pos = x_pos + 1
 
                 x_pos = p_xpos - min_x
-                y_pos = p_ypos - min_y - (p_xsize//2)
+                y_pos = p_ypos - min_y - (p_xsize // 2)
                 for _ in range(p_xsize):
                     slicerino1 = np.zeros((layercount, width), np.uint8)
                     slicerino2 = np.zeros((layercount, width), np.uint8)
                     for i in range(layercount):
                         for j in range(width):
                             try:
-                                slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                                slicerino1[i, j] = layers[
+                                    i, int(y_pos), int(x_pos + j - (width // 2))
+                                ]
                             except IndexError:
                                 pass
                             try:
-                                slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                                slicerino2[i, j] = layers[
+                                    i, int(y_pos + j - (width // 2)), int(x_pos)
+                                ]
                             except IndexError:
                                 pass
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                            slicerino1.tobytes(),
+                        )
+                    )
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                            slicerino2.tobytes(),
+                        )
+                    )
                     y_pos = y_pos + 1
 
         # if pad is not circular: treat it as a rectangle
         else:
             orien = p_orien
-            rot = np.array([[np.cos(orien), -np.sin(orien)], [np.sin(orien), np.cos(orien)]])
+            rot = np.array(
+                [[np.cos(orien), -np.sin(orien)], [np.sin(orien), np.cos(orien)]]
+            )
             directions_y = [-p_ysize // 2, p_ysize // 2, p_ysize // 2, -p_ysize // 2]
             directions_x = [-p_xsize // 2, -p_xsize // 2, p_xsize // 2, p_xsize // 2]
             directions = np.array([directions_x, directions_y]).transpose()
             directions = np.dot(directions, rot).transpose()
             x_vertices = directions[0] + p_xpos - min_x
             y_vertices = directions[1] + p_ypos - min_y
-            x_vector = np.array([x_vertices[3] - x_vertices[0], y_vertices[3] - y_vertices[0]])
-            y_vector = np.array([x_vertices[1] - x_vertices[0], y_vertices[1] - y_vertices[0]])
+            x_vector = np.array(
+                [x_vertices[3] - x_vertices[0], y_vertices[3] - y_vertices[0]]
+            )
+            y_vector = np.array(
+                [x_vertices[1] - x_vertices[0], y_vertices[1] - y_vertices[0]]
+            )
             x_vector = x_vector / np.linalg.norm(x_vector)
             y_vector = y_vector / np.linalg.norm(y_vector)
-            
+
             # if there is the possibility (depending on its angle) that the pad is bigger than the slice: create slices along its edge
             if np.sqrt(np.square(p_xsize) + np.square(p_ysize)) >= width:
                 x_pos = x_vertices[0]
@@ -336,15 +512,29 @@ def _slice_pad(start, stop):
                     for i in range(layercount):
                         for j in range(width):
                             try:
-                                slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                                slicerino1[i, j] = layers[
+                                    i, int(y_pos), int(x_pos + j - (width // 2))
+                                ]
                             except IndexError:
                                 pass
                             try:
-                                slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                                slicerino2[i, j] = layers[
+                                    i, int(y_pos + j - (width // 2)), int(x_pos)
+                                ]
                             except IndexError:
                                 pass
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                            slicerino1.tobytes(),
+                        )
+                    )
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                            slicerino2.tobytes(),
+                        )
+                    )
                     x_pos = x_pos + x_vector[0]
                     y_pos = y_pos + x_vector[1]
 
@@ -356,15 +546,29 @@ def _slice_pad(start, stop):
                     for i in range(layercount):
                         for j in range(width):
                             try:
-                                slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                                slicerino1[i, j] = layers[
+                                    i, int(y_pos), int(x_pos + j - (width // 2))
+                                ]
                             except IndexError:
                                 pass
                             try:
-                                slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                                slicerino2[i, j] = layers[
+                                    i, int(y_pos + j - (width // 2)), int(x_pos)
+                                ]
                             except IndexError:
                                 pass
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                            slicerino1.tobytes(),
+                        )
+                    )
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                            slicerino2.tobytes(),
+                        )
+                    )
                     x_pos = x_pos + x_vector[0]
                     y_pos = y_pos + x_vector[1]
 
@@ -376,15 +580,29 @@ def _slice_pad(start, stop):
                     for i in range(layercount):
                         for j in range(width):
                             try:
-                                slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                                slicerino1[i, j] = layers[
+                                    i, int(y_pos), int(x_pos + j - (width // 2))
+                                ]
                             except IndexError:
                                 pass
                             try:
-                                slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                                slicerino2[i, j] = layers[
+                                    i, int(y_pos + j - (width // 2)), int(x_pos)
+                                ]
                             except IndexError:
                                 pass
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                            slicerino1.tobytes(),
+                        )
+                    )
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                            slicerino2.tobytes(),
+                        )
+                    )
                     x_pos = x_pos + y_vector[0]
                     y_pos = y_pos + y_vector[1]
 
@@ -396,15 +614,29 @@ def _slice_pad(start, stop):
                     for i in range(layercount):
                         for j in range(width):
                             try:
-                                slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                                slicerino1[i, j] = layers[
+                                    i, int(y_pos), int(x_pos + j - (width // 2))
+                                ]
                             except IndexError:
                                 pass
                             try:
-                                slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                                slicerino2[i, j] = layers[
+                                    i, int(y_pos + j - (width // 2)), int(x_pos)
+                                ]
                             except IndexError:
                                 pass
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                            slicerino1.tobytes(),
+                        )
+                    )
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                            slicerino2.tobytes(),
+                        )
+                    )
                     x_pos = x_pos + y_vector[0]
                     y_pos = y_pos + y_vector[1]
             # if the pad is smaller than the slice: create slices along its x- and y-axis
@@ -417,15 +649,29 @@ def _slice_pad(start, stop):
                     for i in range(layercount):
                         for j in range(width):
                             try:
-                                slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                                slicerino1[i, j] = layers[
+                                    i, int(y_pos), int(x_pos + j - (width // 2))
+                                ]
                             except IndexError:
                                 pass
                             try:
-                                slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                                slicerino2[i, j] = layers[
+                                    i, int(y_pos + j - (width // 2)), int(x_pos)
+                                ]
                             except IndexError:
                                 pass
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                            slicerino1.tobytes(),
+                        )
+                    )
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                            slicerino2.tobytes(),
+                        )
+                    )
                     x_pos = x_pos + x_vector[0]
                     y_pos = y_pos + x_vector[1]
 
@@ -437,18 +683,33 @@ def _slice_pad(start, stop):
                     for i in range(layercount):
                         for j in range(width):
                             try:
-                                slicerino1[i, j] = layers[i, int(y_pos), int(x_pos+j-(width//2))]
+                                slicerino1[i, j] = layers[
+                                    i, int(y_pos), int(x_pos + j - (width // 2))
+                                ]
                             except IndexError:
                                 pass
                             try:
-                                slicerino2[i, j] = layers[i, int(y_pos+j-(width//2)), int(x_pos)]
+                                slicerino2[i, j] = layers[
+                                    i, int(y_pos + j - (width // 2)), int(x_pos)
+                                ]
                             except IndexError:
                                 pass
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_0", slicerino1.tobytes()))
-                    slices.append((str(int(x_pos)) + "_" + str(int(y_pos)) + "_1", slicerino2.tobytes()))
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_0",
+                            slicerino1.tobytes(),
+                        )
+                    )
+                    slices.append(
+                        (
+                            str(int(x_pos)) + "_" + str(int(y_pos)) + "_1",
+                            slicerino2.tobytes(),
+                        )
+                    )
                     x_pos = x_pos + y_vector[0]
                     y_pos = y_pos + y_vector[1]
     return slices
+
 
 def createSlicesMP(plugin):
     """Creates slices from the PCB layout by converting the entire board into a byte array and slicing along its components.
@@ -478,9 +739,9 @@ def createSlicesMP(plugin):
     min_y = box.GetTop() // step_value
     max_x = box.GetRight() // step_value
     max_y = box.GetBottom() // step_value
-    layers_shape = (layercount, max_y-min_y, max_x-min_x)
+    layers_shape = (layercount, max_y - min_y, max_x - min_x)
     # array in shared memory for multiprocessing
-    layers_raw = RawArray(c_byte, layers_shape[0]*layers_shape[1]*layers_shape[2])
+    layers_raw = RawArray(c_byte, layers_shape[0] * layers_shape[1] * layers_shape[2])
     layers = np.frombuffer(layers_raw, np.uint8).reshape(layers_shape)
 
     for i in range(layercount):
@@ -493,15 +754,30 @@ def createSlicesMP(plugin):
             p_orien = p.get_orientation()
 
             # pads penetrate layers
-            if (p.get_top_layer_id() <= i and p.get_bottom_layer_id() >= i):
+            if p.get_top_layer_id() <= i and p.get_bottom_layer_id() >= i:
                 # everything that is not a circle is treated as a rectangle
                 if p_shape == 0:
                     rr, cc = draw.disk((p_ypos - min_y, p_xpos - min_x), p_xsize // 2)
                 else:
                     orien = p_orien
-                    rot = np.array([[np.cos(orien), -np.sin(orien)], [np.sin(orien), np.cos(orien)]])
-                    directions_y = [-p_ysize // 2, p_ysize // 2, p_ysize // 2, -p_ysize // 2]
-                    directions_x = [-p_xsize // 2, -p_xsize // 2, p_xsize // 2, p_xsize // 2]
+                    rot = np.array(
+                        [
+                            [np.cos(orien), -np.sin(orien)],
+                            [np.sin(orien), np.cos(orien)],
+                        ]
+                    )
+                    directions_y = [
+                        -p_ysize // 2,
+                        p_ysize // 2,
+                        p_ysize // 2,
+                        -p_ysize // 2,
+                    ]
+                    directions_x = [
+                        -p_xsize // 2,
+                        -p_xsize // 2,
+                        p_xsize // 2,
+                        p_xsize // 2,
+                    ]
                     directions = np.array([directions_x, directions_y]).transpose()
                     directions = np.dot(directions, rot).transpose()
                     c = directions[0] + p_xpos - min_x
@@ -513,14 +789,13 @@ def createSlicesMP(plugin):
                 except IndexError:
                     pass
 
-
         for v in vias:
             v_xpos = v.get_x_pos(step_value)
             v_ypos = v.get_y_pos(step_value)
             v_width = v.get_width(step_value)
 
             # vias penetrate layers
-            if (v.get_top_layer_id() <= i and v.get_bottom_layer_id() >= i):
+            if v.get_top_layer_id() <= i and v.get_bottom_layer_id() >= i:
                 # vias are always circles
                 rr, cc = draw.disk((v_ypos - min_y, v_xpos - min_x), v_width // 2)
                 signal = plugin.get_annotated_net(v.get_netcode())
@@ -536,7 +811,9 @@ def createSlicesMP(plugin):
             t_yend = t.get_end_y(step_value)
             t_width = t.get_width(step_value)
 
-            if t.get_layer_id() == i or (t.get_layer_id() == 31 and i == layercount-1):
+            if t.get_layer_id() == i or (
+                t.get_layer_id() == 31 and i == layercount - 1
+            ):
                 direction1 = np.array([t_xend - t_xstart, t_yend - t_ystart])
                 rot90 = np.array([[0, 1], [-1, 0]])
                 direc_l = np.linalg.norm(direction1)
@@ -549,8 +826,22 @@ def createSlicesMP(plugin):
                 direction2 = -direction1
                 direction3 = direction2
                 direction4 = direction1
-                r = np.array([t_ystart + direction1[1] - min_y, t_ystart + direction2[1] - min_y, t_yend + direction3[1] - min_y, t_yend + direction4[1] - min_y])
-                c = np.array([t_xstart + direction1[0] - min_x, t_xstart + direction2[0] - min_x, t_xend + direction3[0] - min_x, t_xend + direction4[0] - min_x])
+                r = np.array(
+                    [
+                        t_ystart + direction1[1] - min_y,
+                        t_ystart + direction2[1] - min_y,
+                        t_yend + direction3[1] - min_y,
+                        t_yend + direction4[1] - min_y,
+                    ]
+                )
+                c = np.array(
+                    [
+                        t_xstart + direction1[0] - min_x,
+                        t_xstart + direction2[0] - min_x,
+                        t_xend + direction3[0] - min_x,
+                        t_xend + direction4[0] - min_x,
+                    ]
+                )
                 # a track is represented as a rectangle with two half-circles at its ends
                 rr, cc = draw.polygon(r, c)
                 qq, tt = draw.disk((t_ystart - min_y, t_xstart - min_x), t_width // 2)
@@ -565,26 +856,55 @@ def createSlicesMP(plugin):
 
     # the name of the project
     filename = board.GetFileName()
-    name = re.search(r'[^\/]*\.kicad_pcb', filename).group(0)[:-10]
+    name = re.search(r"[^\/]*\.kicad_pcb", filename).group(0)[:-10]
     # for i in range(layercount):
     #     skio.imsave(name + "-layer" + str(i) + ".png", layers[i])
 
     width = plugin.get_preference("slice_x")
-    cpus = cpu_count()-1
+    cpus = cpu_count() - 1
     cpus = 1 if cpus == 0 else cpus
-    with Pool(processes=cpus, initializer=_worker_init, initargs=(layers_raw, layers_shape, layercount, width, step_value, name, min_x, min_y)) as pool:
+    with Pool(
+        processes=cpus,
+        initializer=_worker_init,
+        initargs=(
+            layers_raw,
+            layers_shape,
+            layercount,
+            width,
+            step_value,
+            name,
+            min_x,
+            min_y,
+        ),
+    ) as pool:
         if len(tracks) > 100:
-            res1 = [pool.apply_async(_slice_track, (i * len(tracks) // cpus, (i+1) * len(tracks) // cpus)) for i in range(cpus)]
+            res1 = [
+                pool.apply_async(
+                    _slice_track,
+                    (i * len(tracks) // cpus, (i + 1) * len(tracks) // cpus),
+                )
+                for i in range(cpus)
+            ]
         else:
             res1 = [pool.apply_async(_slice_track, (0, len(tracks)))]
 
         if len(vias) > 100:
-            res2 = [pool.apply_async(_slice_via, (i * len(vias) // cpus, (i+1) * len(vias) // cpus)) for i in range(cpus)]
+            res2 = [
+                pool.apply_async(
+                    _slice_via, (i * len(vias) // cpus, (i + 1) * len(vias) // cpus)
+                )
+                for i in range(cpus)
+            ]
         else:
             res2 = [pool.apply_async(_slice_via, (0, len(vias)))]
 
         if len(pads) > 100:
-            res3 = [pool.apply_async(_slice_pad, (i * len(pads) // cpus, (i+1) * len(pads) // cpus)) for i in range(cpus)]
+            res3 = [
+                pool.apply_async(
+                    _slice_pad, (i * len(pads) // cpus, (i + 1) * len(pads) // cpus)
+                )
+                for i in range(cpus)
+            ]
         else:
             res3 = [pool.apply_async(_slice_pad, (0, len(pads)))]
 

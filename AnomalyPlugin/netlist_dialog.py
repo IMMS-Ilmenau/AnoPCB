@@ -2,14 +2,21 @@
 import pcbnew
 import wx
 import wx.aui
-import wx.lib.mixins.listctrl  as  listmix
+import wx.lib.mixins.listctrl as listmix
+
 
 class NetlistDialog(wx.Dialog):
     """The dialog for presenting a netlist with all annotated nets."""
-    
+
     class EditableListCtrl(wx.ListCtrl, listmix.TextEditMixin):
-        def __init__(self, parent, ID=wx.ID_ANY, pos=wx.DefaultPosition,
-                    size=wx.DefaultSize, style=0):
+        def __init__(
+            self,
+            parent,
+            ID=wx.ID_ANY,
+            pos=wx.DefaultPosition,
+            size=wx.DefaultSize,
+            style=0,
+        ):
             wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
             listmix.TextEditMixin.__init__(self)
 
@@ -35,7 +42,9 @@ class NetlistDialog(wx.Dialog):
             if net in netdict:
                 self.list_an.InsertItem(num_nets_an, netdict[net].GetNetname())
                 self.list_an.SetItem(num_nets_an, 1, str(signal))
-                self.list_an.SetItem(num_nets_an, 2, self.possible_signals[int(signal)-1])
+                self.list_an.SetItem(
+                    num_nets_an, 2, self.possible_signals[int(signal) - 1]
+                )
                 if signal != 0:
                     del netdict[net]
         for net in netdict:
@@ -47,8 +56,12 @@ class NetlistDialog(wx.Dialog):
         self.list_un = NetlistDialog.EditableListCtrl(self, -1, style=wx.LC_REPORT)
 
     def control_logic(self):
-        self.list_an.Bind(wx.EVT_LIST_BEGIN_LABEL_EDIT, self.change_an_signal_evt_handler)
-        self.list_un.Bind(wx.EVT_LIST_BEGIN_LABEL_EDIT, self.change_un_signal_evt_handler)
+        self.list_an.Bind(
+            wx.EVT_LIST_BEGIN_LABEL_EDIT, self.change_an_signal_evt_handler
+        )
+        self.list_un.Bind(
+            wx.EVT_LIST_BEGIN_LABEL_EDIT, self.change_un_signal_evt_handler
+        )
         self.list_an.Bind(wx.EVT_LIST_ITEM_FOCUSED, self.highlight_an_net)
         self.list_un.Bind(wx.EVT_LIST_ITEM_FOCUSED, self.highlight_un_net)
         self.list_an.Bind(wx.EVT_CLOSE, self.remove_hightlighting_evt)
@@ -56,13 +69,13 @@ class NetlistDialog(wx.Dialog):
 
     def layouting(self):
         self.table_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.list_an.InsertColumn(0, 'Annotated Nets')
-        self.list_an.InsertColumn(1, 'Signal')
-        self.list_an.InsertColumn(2, 'Signalname')
+        self.list_an.InsertColumn(0, "Annotated Nets")
+        self.list_an.InsertColumn(1, "Signal")
+        self.list_an.InsertColumn(2, "Signalname")
         self.list_an.SetColumnWidth(0, 140)
         self.list_an.SetColumnWidth(1, 50)
         self.list_an.SetColumnWidth(2, 140)
-        self.list_un.InsertColumn(0, 'Other Nets')
+        self.list_un.InsertColumn(0, "Other Nets")
         self.list_un.SetColumnWidth(0, 140)
         self.table_sizer.Add(self.list_an, 1, wx.EXPAND)
         self.table_sizer.Add(self.list_un, 1, wx.EXPAND)
@@ -72,12 +85,12 @@ class NetlistDialog(wx.Dialog):
         self.change_signal(evt.GetIndex(), self.list_an)
         evt.Veto()
         self.reload_data()
-    
+
     def change_un_signal_evt_handler(self, evt):
         self.change_signal(evt.GetIndex(), self.list_un)
         evt.Veto()
         self.reload_data()
-    
+
     def change_signal(self, index, table):
         netname = table.GetItemText(index)
         netcode = pcbnew.GetBoard().GetNetcodeFromNetname(netname)
@@ -88,28 +101,34 @@ class NetlistDialog(wx.Dialog):
         message_net = f"Net: {netname}"
 
         signal = self.plugin.get_annotated_net(netcode)
-        signalname = self.possible_signals[7] if signal is None else self.possible_signals[int(signal)-1]
-        signal = self.possible_signals.index(signalname)+1
+        signalname = (
+            self.possible_signals[7]
+            if signal is None
+            else self.possible_signals[int(signal) - 1]
+        )
+        signal = self.possible_signals.index(signalname) + 1
         dialog = wx.SingleChoiceDialog(
             parent=self,
-            message=message_net+"Signal: "+str(signalname),
+            message=message_net + "Signal: " + str(signalname),
             caption="Annotation",
-            choices=self.possible_signals
+            choices=self.possible_signals,
         )
-        dialog.SetSelection(signal-1)
+        dialog.SetSelection(signal - 1)
         if dialog.ShowModal() == wx.ID_CANCEL:
             return
-        value = str(dialog.GetSelection()+1)
+        value = str(dialog.GetSelection() + 1)
         if not value.isnumeric():
             wx.MessageBox(
                 "Input signal must be a positive Integer!",
-                'Error',
-                wx.OK | wx.ICON_ERROR)
+                "Error",
+                wx.OK | wx.ICON_ERROR,
+            )
         elif not value in ["1", "2", "3", "4", "5", "6", "7", "8"]:
             wx.MessageBox(
-                'Signal not within accepted range! [1, 2, ..., 8]',
-                'Error',
-                wx.OK | wx.ICON_ERROR)
+                "Signal not within accepted range! [1, 2, ..., 8]",
+                "Error",
+                wx.OK | wx.ICON_ERROR,
+            )
         else:
             self.plugin.set_annotated_net(netcode, value)
 
@@ -142,7 +161,7 @@ class NetlistDialog(wx.Dialog):
         """
         board = pcbnew.GetBoard()
         return board.GetTracks()
-    
+
     def get_pads(self):
         """Gets the current pads from pcbnew.
 
@@ -160,7 +179,7 @@ class NetlistDialog(wx.Dialog):
         """
         board = pcbnew.GetBoard()
         return board.Zones()
-    
+
     def remove_hightlighting_evt(self, evt):
         self.remove_hightlighting()
 
