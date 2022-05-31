@@ -3,10 +3,12 @@ A module containing Wrapper classes for pcbnews components,
 which are just C++ classes mirrored by Swig.
 """
 
+
 class Track:
     """Wrapper Class for pcbnew.TRACK.
     Vias are also Tracks, test with .GetClass() == "TRACK" before creating Wrapper.
     """
+
     def __init__(self, track):
         """Initializes the Track.
 
@@ -186,8 +188,8 @@ class Via:
 
 
 class Net:
-    """Wrapper class for pcbnew.NETINFO_ITEM
-    """
+    """Wrapper class for pcbnew.NETINFO_ITEM"""
+
     def __init__(self, net):
         """Initializes the Net.
 
@@ -252,8 +254,8 @@ class Net:
 
 
 class Pad:
-    """Wrapper class for pcbnew.PAD
-    """
+    """Wrapper class for pcbnew.PAD"""
+
     def __init__(self, pad):
         """Initializes the Pad.
 

@@ -1,4 +1,3 @@
-
 """Contains the RegexDialog used by the TrackGUI"""
 import pcbnew
 import wx
@@ -8,6 +7,7 @@ from AnomalyPlugin.netlist_dialog import NetlistDialog
 
 class RegexDialog(wx.Frame):
     """The dialog for annotating the board via RegExes."""
+
     def __init__(self, parent, plugin):
         """Initializes the GUI.
 
@@ -26,18 +26,16 @@ class RegexDialog(wx.Frame):
 
         dat = self.plugin.get_user_regex_tuples()
         possible_signals = self.get_signals_list()
-        for i in dat: 
+        for i in dat:
             num_items = self.regex_list.GetItemCount()
             self.regex_list.InsertItem(num_items, i[0])
-            self.regex_list.SetItem(num_items, 1, possible_signals[int(i[1])-1])
-        
+            self.regex_list.SetItem(num_items, 1, possible_signals[int(i[1]) - 1])
 
     def control_elements(self):
-        """Loads all the GUI-Elements for the regex dialog.
-        """
+        """Loads all the GUI-Elements for the regex dialog."""
 
         self.grid_panel = wx.Panel(self, style=wx.SUNKEN_BORDER)
-                
+
         self.component_panel = wx.Panel(self.grid_panel, style=wx.SUNKEN_BORDER)
         self.signal_panel = wx.Panel(self.grid_panel, style=wx.SUNKEN_BORDER)
 
@@ -53,11 +51,9 @@ class RegexDialog(wx.Frame):
         self.component_box = wx.TextCtrl(self.component_panel, value="")
         self.signal_box = wx.TextCtrl(self.signal_panel, value="")
         self.text = wx.TextCtrl(self, style=wx.TE_READONLY)
-        
 
     def control_logic(self):
-        """Binds the elements to their logic.
-        """
+        """Binds the elements to their logic."""
         self.add_button.Bind(wx.EVT_BUTTON, self.on_add)
         self.remove_button.Bind(wx.EVT_BUTTON, self.on_remove)
         self.clear_button.Bind(wx.EVT_BUTTON, self.on_clear)
@@ -67,25 +63,24 @@ class RegexDialog(wx.Frame):
 
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_lc_selected, id=-1)
 
-
     def layouting(self):
-        """Layouts and aligns all the GUI-Elements in the regex dialog.
-        """
+        """Layouts and aligns all the GUI-Elements in the regex dialog."""
         aligner = wx.BoxSizer(wx.VERTICAL)
 
-        self.regex_list.InsertColumn(0, 'Component')
-        self.regex_list.InsertColumn(1, 'Signal')
+        self.regex_list.InsertColumn(0, "Component")
+        self.regex_list.InsertColumn(1, "Signal")
         self.regex_list.SetColumnWidth(0, 300)
         self.regex_list.SetColumnWidth(1, 300)
 
         aligner.Add(self.regex_list, 5, wx.ALL | wx.EXPAND)
         aligner.Add(self.text, 1, wx.ALL | wx.EXPAND)
 
-
         component_horizontal_sizer = wx.BoxSizer(wx.HORIZONTAL)
         signal_horizontal_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        component_horizontal_sizer.Add(self.component_label, 2, wx.ALIGN_CENTER_VERTICAL)
+        component_horizontal_sizer.Add(
+            self.component_label, 2, wx.ALIGN_CENTER_VERTICAL
+        )
         component_horizontal_sizer.Add(self.component_box, 5, wx.ALL | wx.EXPAND)
         signal_horizontal_sizer.Add(self.signal_label, 2, wx.ALIGN_CENTER_VERTICAL)
         signal_horizontal_sizer.Add(self.signal_box, 5, wx.ALL | wx.EXPAND)
@@ -110,8 +105,7 @@ class RegexDialog(wx.Frame):
         self.Centre()
 
     def get_signals_list(self):
-        """Loads the preferences for the Signals 1-8 and returns a list containing them.
-        """
+        """Loads the preferences for the Signals 1-8 and returns a list containing them."""
         signal1 = self.plugin.get_preference("signal1")
         signal2 = self.plugin.get_preference("signal2")
         signal3 = self.plugin.get_preference("signal3")
@@ -121,7 +115,16 @@ class RegexDialog(wx.Frame):
         signal7 = self.plugin.get_preference("signal7")
         signal8 = self.plugin.get_preference("signal8")
 
-        possible_signals = [signal1, signal2, signal3, signal4, signal5, signal6, signal7, signal8]
+        possible_signals = [
+            signal1,
+            signal2,
+            signal3,
+            signal4,
+            signal5,
+            signal6,
+            signal7,
+            signal8,
+        ]
 
         return possible_signals
 
@@ -134,7 +137,6 @@ class RegexDialog(wx.Frame):
         dia = NetlistDialog(self, self.plugin)
         dia.Show(True)
 
-
     def on_lc_selected(self, event):
         """Shows the currently selected Component.
 
@@ -146,10 +148,9 @@ class RegexDialog(wx.Frame):
         self.text.Clear()
         item0 = self.regex_list.GetItem(self.regex_list.GetFocusedItem(), 0).GetText()
         item1 = self.regex_list.GetItem(self.regex_list.GetFocusedItem(), 1).GetText()
-        if item1 in possible_signals: 
-            item1 = str(possible_signals.index(item1)+1)
+        if item1 in possible_signals:
+            item1 = str(possible_signals.index(item1) + 1)
         self.text.AppendText(item0 + " -> " + item1)
-
 
     def on_add(self, event):
         """Called by the 'Add' button. Adds the entered RegEx - Signal pair.
@@ -167,17 +168,19 @@ class RegexDialog(wx.Frame):
         component = self.component_box.GetValue()
 
         possible_signals = self.get_signals_list()
-        
-        if signal in possible_signals:
-            signal = str(possible_signals.index(signal)+1)
 
+        if signal in possible_signals:
+            signal = str(possible_signals.index(signal) + 1)
 
         if not signal in ["1", "2", "3", "4", "5", "6", "7", "8"]:
             dlg = wx.MessageDialog(
                 self,
-                'No possible value selected! (1, 2, 3, 4, 5, 6, 7, 8) or (' + ', '.join(str(i) for i in possible_signals) + ')',
-                'Error',
-                wx.OK | wx.ICON_INFORMATION)
+                "No possible value selected! (1, 2, 3, 4, 5, 6, 7, 8) or ("
+                + ", ".join(str(i) for i in possible_signals)
+                + ")",
+                "Error",
+                wx.OK | wx.ICON_INFORMATION,
+            )
             dlg.ShowModal()
             dlg.Destroy()
             return
@@ -185,16 +188,17 @@ class RegexDialog(wx.Frame):
         if self.plugin.user_regex_contains_component(component):
             dlg = wx.MessageDialog(
                 self,
-                'There is already a regex containing ' + str(component) + '!',
-                'Error',
-                wx.OK | wx.ICON_INFORMATION)
+                "There is already a regex containing " + str(component) + "!",
+                "Error",
+                wx.OK | wx.ICON_INFORMATION,
+            )
             dlg.ShowModal()
             dlg.Destroy()
             return
 
         self.regex_list.InsertItem(num_items, component)
-        self.regex_list.SetItem(num_items, 1, possible_signals[int(signal)-1])
-        self.plugin.set_user_regex(component, signal) # change in dict
+        self.regex_list.SetItem(num_items, 1, possible_signals[int(signal) - 1])
+        self.plugin.set_user_regex(component, signal)  # change in dict
         netcontains = False
         board = pcbnew.GetBoard()
         netcodearray = list(board.GetNetsByNetcode())
@@ -206,13 +210,13 @@ class RegexDialog(wx.Frame):
             dlg = wx.MessageDialog(
                 self,
                 "The Board has no Component that Contains: \n" + self.component,
-                'Warning',
-                wx.OK|wx.ICON_INFORMATION)
+                "Warning",
+                wx.OK | wx.ICON_INFORMATION,
+            )
             dlg.ShowModal()
 
         self.component_box.Clear()
         self.signal_box.Clear()
-
 
     def on_remove(self, event):
         """Called by the 'remove' button. Removes the currently selected Regex - signal pair.
@@ -226,7 +230,6 @@ class RegexDialog(wx.Frame):
         self.regex_list.DeleteItem(index)
         self.text.Clear()
 
-
     def on_close(self, event):
         """Called by the 'close' button. Closes the dialog.
 
@@ -235,24 +238,20 @@ class RegexDialog(wx.Frame):
         """
         self.Close()
 
-
-    def on_clear(self, event): 
+    def on_clear(self, event):
         """Called by the 'clear' button. Deletes all entries.
 
         Args:
             evt (wx.EVENT): Unused.
         """
         self.regex_list.DeleteAllItems()
-        self.plugin.clear_user_regex() # change in dict
+        self.plugin.clear_user_regex()  # change in dict
         self.text.Clear()
 
-
     def get_tracks(self):
-        """Gets all tracks from the Pcbnew Api.
-        """
+        """Gets all tracks from the Pcbnew Api."""
         board = pcbnew.GetBoard()
         return board.GetTracks()
-
 
     def on_annotate(self, event):
         """Called by the 'annotate' button. Applies all RegExes.
@@ -269,5 +268,3 @@ class RegexDialog(wx.Frame):
                 if name in board.FindNet(netcode).GetNetname():
                     self.plugin.set_annotated_net(netcode, signal)
         print("annotated succesfully")
-
-       
