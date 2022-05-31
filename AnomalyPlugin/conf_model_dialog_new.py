@@ -7,10 +7,10 @@ from AnomalyPlugin.model_selection_window import ModelSelectionWindow
 
 class ConfModelDialog(wx.Dialog):
     """The dialog opened when clicking the "model configuration" button.
-     It allows the user to send new models to the server.
-     It also queries the server for available models and gives
-     the user the option to serve or delete them. For further reference
-     check out the guide (ML-Guide.txt).
+    It allows the user to send new models to the server.
+    It also queries the server for available models and gives
+    the user the option to serve or delete them. For further reference
+    check out the guide (ML-Guide.txt).
     """
 
     def __init__(self, parent, plugin):
@@ -22,16 +22,19 @@ class ConfModelDialog(wx.Dialog):
         """
         wx.Dialog.__init__(self, parent, size=(510, 280), style=wx.DEFAULT_DIALOG_STYLE)
         self.plugin = plugin
-        self.av_models, self.ac_model, self.ac_model_conf, self.inp_shape = self.get_models()
+        (
+            self.av_models,
+            self.ac_model,
+            self.ac_model_conf,
+            self.inp_shape,
+        ) = self.get_models()
 
         self.control_elements()
         self.control_logic()
         self.layouting()
 
-
     def control_elements(self):
-        """Loads all the GUI-Elements for the configure model dialog.
-        """
+        """Loads all the GUI-Elements for the configure model dialog."""
         self.button_panel = wx.Panel(self, style=wx.SUNKEN_BORDER)
         self.text_panel = wx.Panel(self, style=wx.SUNKEN_BORDER)
 
@@ -49,46 +52,45 @@ class ConfModelDialog(wx.Dialog):
         self.serve_button = wx.Button(self.button_panel, 3, "Serve model")
         self.close_button = wx.Button(self.button_panel, 4, "Close")
 
-
     def control_logic(self):
-        """Binds the elements to their logic.
-        """
+        """Binds the elements to their logic."""
         self.Bind(wx.EVT_BUTTON, self.on_send, id=1)
         self.Bind(wx.EVT_BUTTON, self.on_delete, id=2)
         self.Bind(wx.EVT_BUTTON, self.on_serve, id=3)
         self.Bind(wx.EVT_BUTTON, self.on_close, id=4)
 
-
     def layouting(self):
-        """Layouts and aligns all the GUI-Elements in the configure model dialog.
-        """
-        self.button_sizer.Add(
-            self.send_button, 1, flag=wx.EXPAND)
-        self.button_sizer.Add(
-            self.delete_button, 1, flag=wx.EXPAND)
-        self.button_sizer.Add(
-            self.serve_button, 1, flag=wx.EXPAND)
-        self.button_sizer.Add(
-            self.close_button, 1, flag=wx.EXPAND)
+        """Layouts and aligns all the GUI-Elements in the configure model dialog."""
+        self.button_sizer.Add(self.send_button, 1, flag=wx.EXPAND)
+        self.button_sizer.Add(self.delete_button, 1, flag=wx.EXPAND)
+        self.button_sizer.Add(self.serve_button, 1, flag=wx.EXPAND)
+        self.button_sizer.Add(self.close_button, 1, flag=wx.EXPAND)
         self.button_panel.SetSizer(self.button_sizer)
 
         self.text_sizer.Add(
-            self.active_text, pos=(0, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=0)
+            self.active_text,
+            pos=(0, 0),
+            flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT,
+            border=0,
+        )
         self.text_sizer.Add(
-            self.active_shape, pos=(1, 0), flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, border=0)
+            self.active_shape,
+            pos=(1, 0),
+            flag=wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT,
+            border=0,
+        )
         self.text_panel.SetSizer(self.text_sizer)
 
         self.model_sizer.Add(
-            self.model_ctrl, flag=wx.EXPAND | wx.TOP | wx.RIGHT, border=5)
+            self.model_ctrl, flag=wx.EXPAND | wx.TOP | wx.RIGHT, border=5
+        )
         self.model_sizer.Add(
-            self.text_panel, flag=wx.EXPAND | wx.BOTTOM | wx.TOP | wx.RIGHT, border=5)
+            self.text_panel, flag=wx.EXPAND | wx.BOTTOM | wx.TOP | wx.RIGHT, border=5
+        )
 
-        self.main_sizer.Add(
-            self.button_panel, 2, flag=wx.EXPAND | wx.ALL, border=5)
-        self.main_sizer.Add(
-            self.model_sizer, 3, flag=wx.EXPAND)
+        self.main_sizer.Add(self.button_panel, 2, flag=wx.EXPAND | wx.ALL, border=5)
+        self.main_sizer.Add(self.model_sizer, 3, flag=wx.EXPAND)
         self.SetSizer(self.main_sizer)
-
 
     def on_send(self, evt):
         """Called by the "Send model" button. Opens the model selection window
@@ -98,9 +100,13 @@ class ConfModelDialog(wx.Dialog):
         """
         model_window = ModelSelectionWindow(parent=self, plugin=self.plugin)
         model_window.Show(True)
-        self.av_models, self.ac_model, self.ac_model_conf, self.inp_shape = self.get_models()
+        (
+            self.av_models,
+            self.ac_model,
+            self.ac_model_conf,
+            self.inp_shape,
+        ) = self.get_models()
         self.update_models()
-
 
     def on_delete(self, evt):
         """Called by the "Delete model" button. Instructs the server to delete the model selected by the user.
@@ -110,24 +116,31 @@ class ConfModelDialog(wx.Dialog):
         """
         index = self.model_ctrl.GetFirstSelected()
         if index < 0:
-            wx.MessageBox("Must select a model first.", 'Error', wx.OK | wx.ICON_ERROR)
+            wx.MessageBox("Must select a model first.", "Error", wx.OK | wx.ICON_ERROR)
         else:
             name = self.model_ctrl.GetItemText(index)
             dia = wx.MessageDialog(
                 parent=self,
                 message=f"This will delete the {name} dataset for ever! Continue?",
                 caption="WARNING!",
-                style=wx.OK | wx.CANCEL | wx.OK_DEFAULT)
-            if  not dia.ShowModal() == wx.ID_OK:
+                style=wx.OK | wx.CANCEL | wx.OK_DEFAULT,
+            )
+            if not dia.ShowModal() == wx.ID_OK:
                 return
             else:
                 resp = self.plugin.server_api.delete_model(name)
                 if not resp:
-                    wx.MessageBox("Couldnt delete model.", 'Error', wx.OK | wx.ICON_ERROR)
+                    wx.MessageBox(
+                        "Couldnt delete model.", "Error", wx.OK | wx.ICON_ERROR
+                    )
                 else:
-                    self.av_models, self.ac_model, self.ac_model_conf, self.inp_shape = self.get_models()
+                    (
+                        self.av_models,
+                        self.ac_model,
+                        self.ac_model_conf,
+                        self.inp_shape,
+                    ) = self.get_models()
                     self.update_models()
-
 
     def on_serve(self, evt):
         """Called by the "Serve model" button. Instructs the server to serve the model selected by the user.
@@ -137,36 +150,37 @@ class ConfModelDialog(wx.Dialog):
         """
         index = self.model_ctrl.GetFirstSelected()
         if index < 0:
-            wx.MessageBox("Must select a model first.", 'Error', wx.OK | wx.ICON_ERROR)
+            wx.MessageBox("Must select a model first.", "Error", wx.OK | wx.ICON_ERROR)
         else:
             name = self.model_ctrl.GetItemText(index)
             resp = self.plugin.server_api.serve(name)
             if not resp:
-                wx.MessageBox("Couldnt serve model.", 'Error', wx.OK | wx.ICON_ERROR)
+                wx.MessageBox("Couldnt serve model.", "Error", wx.OK | wx.ICON_ERROR)
             else:
-                self.av_models, self.ac_model, self.ac_model_conf, self.inp_shape = self.get_models()
+                (
+                    self.av_models,
+                    self.ac_model,
+                    self.ac_model_conf,
+                    self.inp_shape,
+                ) = self.get_models()
                 self.update_models()
 
-
     def on_close(self, evt):
-        """ Called by the "Close" button.
+        """Called by the "Close" button.
 
         Args:
             evt (wx.EVENT): unused
         """
         self.Close()
 
-
     def update_models(self):
-        """ Updates the displayed models.
-        """
+        """Updates the displayed models."""
         self.model_ctrl.ClearAll()
         self.model_ctrl.InsertColumn(0, "Models")
         self.model_ctrl.SetColumnWidth(0, 300)
         [self.model_ctrl.InsertItem(0, item) for item in self.av_models]
         self.active_text.SetLabel("Active model: " + str(self.ac_model))
         self.active_shape.SetLabel("Input shape : " + self.inp_shape)
-
 
     def get_models(self):
         """Queries the server for available models.
@@ -183,10 +197,13 @@ class ConfModelDialog(wx.Dialog):
             try:
                 inp_shape = re.search(
                     r"\[.*\]",
-                    re.search(r'"batch_input_shape": \[([\d\s,]|null)*\]', confstr).group(0)).group(0)
+                    re.search(
+                        r'"batch_input_shape": \[([\d\s,]|null)*\]', confstr
+                    ).group(0),
+                ).group(0)
             except:
                 inp_shape = ""
             return (av_models, ac_model, ac_model_conf, inp_shape)
         else:
-            wx.MessageBox("Server not available.", 'Error', wx.OK | wx.ICON_ERROR)
+            wx.MessageBox("Server not available.", "Error", wx.OK | wx.ICON_ERROR)
             self.Close()

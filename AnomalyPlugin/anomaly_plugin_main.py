@@ -1,5 +1,6 @@
 """The core of the plugin."""
 import sys
+
 if __package__ is None or __package__ == "":
     sys.path.append("..")
 import pcbnew
@@ -22,11 +23,12 @@ from AnomalyPlugin.track_gui import TrackGUI
 from AnomalyPlugin.show_results_dialog import ShowResultsDialog
 from AnomalyPlugin.generate_slices_mp import createSlicesMP
 from AnomalyPlugin.server_api import ServerAPI
-#from .wrappers import Track, Pad, Via, Net
-#from . import TrackGUI
-#from .alternative_generate_slices import createSlicesAlt
-#from .generate_slices_mp import createSlicesMP
-#from .generate_slices_default import createSlices
+
+# from .wrappers import Track, Pad, Via, Net
+# from . import TrackGUI
+# from .alternative_generate_slices import createSlicesAlt
+# from .generate_slices_mp import createSlicesMP
+# from .generate_slices_default import createSlices
 
 
 class MainPlugin(pcbnew.ActionPlugin):
@@ -40,7 +42,9 @@ class MainPlugin(pcbnew.ActionPlugin):
         self.category = "prototype"
         self.description = "annotation and serilization of nets, create slices"
         self.show_toolbar_button = True
-        self.icon_file_name = os.path.join(os.path.split(__file__)[0], "Icons/rsz_anopcb.png")
+        self.icon_file_name = os.path.join(
+            os.path.split(__file__)[0], "Icons/rsz_anopcb.png"
+        )
         # our dict containing information about our annotated data
         # key: NetCode (Integer); value: Signal (Integer)
         self.annotated_nets = {}
@@ -62,7 +66,6 @@ class MainPlugin(pcbnew.ActionPlugin):
         self.signals = {}
         self.backup_signals = True
 
-
     def get_preference(self, name):
         """Used to get a current preference setting.
 
@@ -74,7 +77,6 @@ class MainPlugin(pcbnew.ActionPlugin):
         """
         return self.preferences.get(name)
 
-
     def set_preference(self, name, value):
         """Used to set a current preference setting.
 
@@ -83,7 +85,7 @@ class MainPlugin(pcbnew.ActionPlugin):
             value (int, str): The setting value to set.
         """
         self.preferences[name] = value
-        # is_remote = self.get_preference("server_type")=="remote" 
+        # is_remote = self.get_preference("server_type")=="remote"
         is_remote = True if self.get_preference("server_type") == "remote" else False
         if name == "server_address" and is_remote:
             self.server_api.update_adress(value, self.get_preference("server_port"))
@@ -92,10 +94,10 @@ class MainPlugin(pcbnew.ActionPlugin):
         if name == "server_type" and is_remote:
             self.server_api.update_adress(
                 self.get_preference("server_address"),
-                self.get_preference("server_port"))
+                self.get_preference("server_port"),
+            )
 
         return
-
 
     def user_regex_contains(self, name) -> bool:
         """Checks whether a specific regex exists.
@@ -132,7 +134,6 @@ class MainPlugin(pcbnew.ActionPlugin):
         """
         return self.user_regexes.get(name)
 
-
     def set_user_regex(self, name, signal):
         """Used to set the annotated signal for a regex.
 
@@ -143,7 +144,6 @@ class MainPlugin(pcbnew.ActionPlugin):
         self.user_regexes[name] = signal
         return
 
-
     def delete_user_regex(self, name):
         """Deletes a regex associated with a signal.
 
@@ -153,13 +153,10 @@ class MainPlugin(pcbnew.ActionPlugin):
         del self.user_regexes[name]
         return
 
-
     def clear_user_regex(self):
-        """Deletes all regex associated with a signal.
-        """
+        """Deletes all regex associated with a signal."""
         self.user_regexes.clear()
         return
-
 
     def get_user_regex_tuples(self):
         """
@@ -174,7 +171,6 @@ class MainPlugin(pcbnew.ActionPlugin):
             dat.append((compx, self.user_regexes[compx]))
         return dat
 
-
     def get_annotated_net(self, netcode):
         """Used to get the specifically annotated signal of a net.
 
@@ -186,7 +182,6 @@ class MainPlugin(pcbnew.ActionPlugin):
         """
         return self.annotated_nets.get(netcode)
 
-
     def set_annotated_net(self, netcode, signal):
         """Used to set the specifically annotated signal of a net.
 
@@ -196,7 +191,6 @@ class MainPlugin(pcbnew.ActionPlugin):
         """
         self.annotated_nets[netcode] = signal
         return
-
 
     def scheduled_save(self):
         """
@@ -210,25 +204,25 @@ class MainPlugin(pcbnew.ActionPlugin):
                 self.project_last_modified = last_modified
                 # save preferences and annotations, create backups (just in case)
                 try:
-                    with open(self.anopcb_nets_path, 'w') as anopcb_json:
+                    with open(self.anopcb_nets_path, "w") as anopcb_json:
                         json.dump(self.annotated_nets, anopcb_json)
                     if self.backup_nets:
-                        with open(self.anopcb_nets_backup_path, 'w') as anopcb_json:
+                        with open(self.anopcb_nets_backup_path, "w") as anopcb_json:
                             json.dump(self.annotated_nets, anopcb_json)
                     print("Saved annotations.")
 
-                    with open(self.anopcb_pref_path, 'w') as anopcb_json:
+                    with open(self.anopcb_pref_path, "w") as anopcb_json:
                         json.dump(self.preferences, anopcb_json)
                     if self.backup_prefs:
-                        with open(self.anopcb_pref_backup_path, 'w') as anopcb_json:
+                        with open(self.anopcb_pref_backup_path, "w") as anopcb_json:
                             json.dump(self.preferences, anopcb_json)
                     print("Saved preferences.")
 
                     # saves regex
-                    with open(self.anopcb_regex_path, 'w') as anopcb_json:
+                    with open(self.anopcb_regex_path, "w") as anopcb_json:
                         json.dump(self.user_regexes, anopcb_json)
                     if self.backup_regex:
-                        with open(self.anopcb_regex_backup_path, 'w') as anopcb_json:
+                        with open(self.anopcb_regex_backup_path, "w") as anopcb_json:
                             json.dump(self.user_regexes, anopcb_json)
                     print("Saved regular expressions.")
 
@@ -236,10 +230,8 @@ class MainPlugin(pcbnew.ActionPlugin):
                     print("Error while saving: ", error.args)
             time.sleep(0.3)
 
-
     def scheduled_stop_server(self):
-        """Make sure to stop the locally started docker server once kicad is closed.
-        """
+        """Make sure to stop the locally started docker server once kicad is closed."""
         try:
             self.anopcb_server_container.stop()
         except Exception:
@@ -254,7 +246,6 @@ class MainPlugin(pcbnew.ActionPlugin):
         except Exception:
             pass
 
-
     def initiliaze(self):
         """
         Initiliazes stuff after pcbnew finished initiliazing itself,
@@ -267,31 +258,43 @@ class MainPlugin(pcbnew.ActionPlugin):
 
             # paths of relevant files
             self.project_file_path = pcbnew.GetBoard().GetFileName()
-            if self.project_file_path == '':
+            if self.project_file_path == "":
                 wx.MessageBox(
                     "No Project opened, the plugin wont work!",
-                    'Error',
-                    wx.OK | wx.ICON_ERROR)
+                    "Error",
+                    wx.OK | wx.ICON_ERROR,
+                )
                 return
-            self.project_dir_path = os.path.split(self.project_file_path)[0] #(dirname, filename)[0]
+            self.project_dir_path = os.path.split(self.project_file_path)[
+                0
+            ]  # (dirname, filename)[0]
             self.anopcb_nets_path = os.path.join(
-                self.project_dir_path, 'anopcb_kicad_pcb.json')
+                self.project_dir_path, "anopcb_kicad_pcb.json"
+            )
             self.anopcb_nets_backup_path = os.path.join(
-                self.project_dir_path, 'anopcb_kicad_pcb_backup.json')
+                self.project_dir_path, "anopcb_kicad_pcb_backup.json"
+            )
             self.anopcb_pref_path = os.path.join(
-                self.project_dir_path, 'anopcb_kicad_pref.json')
+                self.project_dir_path, "anopcb_kicad_pref.json"
+            )
             self.anopcb_pref_backup_path = os.path.join(
-                self.project_dir_path, 'anopcb_kicad_pref_backup.json')
+                self.project_dir_path, "anopcb_kicad_pref_backup.json"
+            )
             self.anopcb_regex_path = os.path.join(
-                self.project_dir_path, 'anopcb_kicad_regex.json')
+                self.project_dir_path, "anopcb_kicad_regex.json"
+            )
             self.anopcb_regex_backup_path = os.path.join(
-                self.project_dir_path, 'anopcb_kicad_regex_backup.json')
+                self.project_dir_path, "anopcb_kicad_regex_backup.json"
+            )
             self.anopcb_filter_layers_path = os.path.join(
-                self.project_dir_path, 'anopcb_filter_layers.json')
+                self.project_dir_path, "anopcb_filter_layers.json"
+            )
             self.anopcb_filter_slices_path = os.path.join(
-                self.project_dir_path, 'anopcb_filter_slices.json')
+                self.project_dir_path, "anopcb_filter_slices.json"
+            )
             self.anopcb_filter_results_path = os.path.join(
-                self.project_dir_path, 'anopcb_filter_results.json')
+                self.project_dir_path, "anopcb_filter_results.json"
+            )
 
             # if anopcb already saved annotation data, we will want to load it
             # if we cant load it the backup wont be overriden with the new (empty) dictionary
@@ -303,7 +306,9 @@ class MainPlugin(pcbnew.ActionPlugin):
                         print("Error while loading annotations: ", error.args)
                         self.annotated_nets = {}
                         self.backup_nets = False
-                new_d = {int(key) : int(value) for key, value in self.annotated_nets.items()}
+                new_d = {
+                    int(key): int(value) for key, value in self.annotated_nets.items()
+                }
                 self.annotated_nets = new_d
             else:
                 self.backup_nets = False
@@ -352,8 +357,6 @@ class MainPlugin(pcbnew.ActionPlugin):
             if self.preferences.get("signal8") is None:
                 self.preferences["signal8"] = "unknown"
 
-            
-
             if os.path.isfile(self.anopcb_regex_path):
                 with open(self.anopcb_regex_path, "r") as anopcb_json:
                     try:
@@ -376,10 +379,10 @@ class MainPlugin(pcbnew.ActionPlugin):
             # the server api
             self.server_api = ServerAPI(
                 self.get_preference("server_address"),
-                self.get_preference("server_port"))
-            
-            atexit.register(self.scheduled_session_removal)
+                self.get_preference("server_port"),
+            )
 
+            atexit.register(self.scheduled_session_removal)
 
     def maybe_start_anopcb_server(self):
         """
@@ -406,8 +409,9 @@ class MainPlugin(pcbnew.ActionPlugin):
         if os.system("which docker") == 256:
             wx.MessageBox(
                 "Docker not installed, install or use remote server instead!",
-                'Error',
-                wx.OK | wx.ICON_ERROR)
+                "Error",
+                wx.OK | wx.ICON_ERROR,
+            )
             return False
 
         # setting up the docker anopcb server
@@ -425,9 +429,12 @@ class MainPlugin(pcbnew.ActionPlugin):
         # add ${ANOPCB_SERVER_SOURCE} to path! (path to the folder containing the source)
         # create/run the server container, may take a while to download
         try:
-            self.anopcb_server_container = list(filter(
-                lambda container: container.name == f"anopcb-server-{docker_tag}",
-                docker_client.containers.list(all=True)))[0]
+            self.anopcb_server_container = list(
+                filter(
+                    lambda container: container.name == f"anopcb-server-{docker_tag}",
+                    docker_client.containers.list(all=True),
+                )
+            )[0]
 
             self.anopcb_server_container.restart()
             server_started_here = True
@@ -435,25 +442,35 @@ class MainPlugin(pcbnew.ActionPlugin):
             dlg = wx.MessageDialog(
                 None,
                 "This might download a docker image from the internet and it would take some time. Continue?",
-                'Continue?',
-                wx.YES_NO | wx.ICON_QUESTION)
+                "Continue?",
+                wx.YES_NO | wx.ICON_QUESTION,
+            )
             result = dlg.ShowModal()
             if result == wx.ID_NO:
                 return False
 
-            mount_volumes = {"anopcb-models": {"bind": "/anopcb-server/models", "mode": "rw"}}
+            mount_volumes = {
+                "anopcb-models": {"bind": "/anopcb-server/models", "mode": "rw"}
+            }
             try:
-                mount_volumes.update({f"{os.environ['ANOPCB_SERVER_SOURCE']}/AnomalyServer.py": {"bind": "/anopcb-server/AnomalyServer.py", "mode": "rw"}})
+                mount_volumes.update(
+                    {
+                        f"{os.environ['ANOPCB_SERVER_SOURCE']}/AnomalyServer.py": {
+                            "bind": "/anopcb-server/AnomalyServer.py",
+                            "mode": "rw",
+                        }
+                    }
+                )
             except:
                 pass
-
 
             self.anopcb_server_container = docker_client.containers.run(
                 f"julian20delta/anopcb-server:{docker_tag}",
                 ports={23923: 23923},
                 detach=True,
                 volumes=mount_volumes,
-                name=f"anopcb-server-{docker_tag}")
+                name=f"anopcb-server-{docker_tag}",
+            )
             server_started_here = True
         self.server_api.update_adress("localhost", 23923)
 
@@ -461,7 +478,6 @@ class MainPlugin(pcbnew.ActionPlugin):
         atexit.register(self.scheduled_stop_server)
 
         return server_started_here
-
 
     def remove_docker_container(self):
         """Tries to stop the currently active docker server."""
@@ -471,16 +487,22 @@ class MainPlugin(pcbnew.ActionPlugin):
         except:
             pass
         try:
-            container = list(filter(
-                lambda container: container.name == f"anopcb-server-cpu",
-                docker_client.containers.list(all=True)))[0]
+            container = list(
+                filter(
+                    lambda container: container.name == f"anopcb-server-cpu",
+                    docker_client.containers.list(all=True),
+                )
+            )[0]
             container.remove()
         except:
             pass
         try:
-            container = list(filter(
-                lambda container: container.name == f"anopcb-server-gpu",
-                docker_client.containers.list(all=True)))[0]
+            container = list(
+                filter(
+                    lambda container: container.name == f"anopcb-server-gpu",
+                    docker_client.containers.list(all=True),
+                )
+            )[0]
             container.remove()
         except:
             pass
@@ -489,8 +511,9 @@ class MainPlugin(pcbnew.ActionPlugin):
         dlg = wx.MessageDialog(
             None,
             "This might download a docker image from the internet and it would take some time. Continue?",
-            'Continue?',
-            wx.YES_NO | wx.ICON_QUESTION)
+            "Continue?",
+            wx.YES_NO | wx.ICON_QUESTION,
+        )
         result = dlg.ShowModal()
         if result == wx.ID_NO:
             return
@@ -498,7 +521,7 @@ class MainPlugin(pcbnew.ActionPlugin):
         if docker_tag == "remote":
             docker_tag = ""
         else:
-            docker_tag = ":"+docker_tag
+            docker_tag = ":" + docker_tag
         try:
             docker_client.images.pull(f"julian20delta/anopcb-server{docker_tag}")
         except:
@@ -509,20 +532,22 @@ class MainPlugin(pcbnew.ActionPlugin):
             parent=gui,
             message="This may take 5 minutes or longer. Continue?",
             caption="Are you sure?",
-            style=wx.OK | wx.CANCEL | wx.CANCEL_DEFAULT)
+            style=wx.OK | wx.CANCEL | wx.CANCEL_DEFAULT,
+        )
         if not dia.ShowModal() == wx.ID_OK:
             return
-        
+
         board = pcbnew.GetBoard()
         filename = board.GetFileName()
-        name = re.search(r'[^\/]*\.kicad_pcb', filename).group(0)[:-10]
+        name = re.search(r"[^\/]*\.kicad_pcb", filename).group(0)[:-10]
 
         with wx.FileDialog(
-                gui,
-                "Export slices",
-                wildcard="JSON file (*.json)|*.json",
-                defaultFile="slices_"+name+".json",
-                style=wx.FD_SAVE) as file_dialog:
+            gui,
+            "Export slices",
+            wildcard="JSON file (*.json)|*.json",
+            defaultFile="slices_" + name + ".json",
+            style=wx.FD_SAVE,
+        ) as file_dialog:
 
             if file_dialog.ShowModal() == wx.ID_CANCEL:
                 return
@@ -531,28 +556,27 @@ class MainPlugin(pcbnew.ActionPlugin):
 
         slices = self.create_slices_mp()
         slices = slices[1]
-        send_slices = [y.decode("utf-8") for x, y in slices] # x is metadata (e.g. position), y is slice in bytes
+        send_slices = [
+            y.decode("utf-8") for x, y in slices
+        ]  # x is metadata (e.g. position), y is slice in bytes
         slice_count = str(len(send_slices))
         x_dim = str(self.get_preference("slice_x"))
         y_dim = str(self.get_preference("slice_y"))
 
         data = dict()
-        data['send_slices'] = send_slices
-        data['slice_count'] = slice_count
-        data['x_dim'] = x_dim
-        data['y_dim'] = y_dim
-        data['name'] = name
+        data["send_slices"] = send_slices
+        data["slice_count"] = slice_count
+        data["x_dim"] = x_dim
+        data["y_dim"] = y_dim
+        data["name"] = name
 
-        with open(pathname, 'w') as json_file:
+        with open(pathname, "w") as json_file:
             json.dump(data, json_file)
-        
-        dia = wx.MessageDialog(
-                parent=gui,
-                message="Done saving slices.",
-                caption="Notice",
-                style=wx.OK)
-        dia.ShowModal()
 
+        dia = wx.MessageDialog(
+            parent=gui, message="Done saving slices.", caption="Notice", style=wx.OK
+        )
+        dia.ShowModal()
 
     def is_annotated(self, netid):
         """(BROKEN) Checks whether a net has a specifically annotated signal.
@@ -569,17 +593,16 @@ class MainPlugin(pcbnew.ActionPlugin):
             self.annotated_nets[str(netid)] = 0
             return False
 
-
     def analyze(self):
         """Calls the method that creates a list of slices from the PCB.
-         Each slice has the following format: ["xpos_ypos_direction", array_as_bytes].
-         The x- and y-positions are not the positions from pcbnew but the positions in the
-         rasterized array. The direction is either 0 or 1 where 0 stands for "in x-direction"
-         and 1 for "in y-direction". The bytes representing the array have to be reconstructed
-         using numpys frombuffer() method. Note that the arrays original shape is not encoded in
-         each slice and has to be inferred from the "slice_x" and "slice_y" preferences used while
-         creating the slices. For further reference see the reconstructor.py file.
-         Example slice: ['1204_1721_0', '\x00\x00\x00\x01\x01\x01']
+        Each slice has the following format: ["xpos_ypos_direction", array_as_bytes].
+        The x- and y-positions are not the positions from pcbnew but the positions in the
+        rasterized array. The direction is either 0 or 1 where 0 stands for "in x-direction"
+        and 1 for "in y-direction". The bytes representing the array have to be reconstructed
+        using numpys frombuffer() method. Note that the arrays original shape is not encoded in
+        each slice and has to be inferred from the "slice_x" and "slice_y" preferences used while
+        creating the slices. For further reference see the reconstructor.py file.
+        Example slice: ['1204_1721_0', '\x00\x00\x00\x01\x01\x01']
         """
         print("maybe starting server here")
         if self.maybe_start_anopcb_server():
@@ -591,7 +614,8 @@ class MainPlugin(pcbnew.ActionPlugin):
                 parent=self.gui,
                 message="The server can't be reached, is not listening on the chosen port or busy.",
                 caption="Server not responding",
-                style=wx.OK)
+                style=wx.OK,
+            )
             dia.ShowModal()
             return
         if self.server_api.get_active_model()["data"][0] is None:
@@ -599,7 +623,8 @@ class MainPlugin(pcbnew.ActionPlugin):
                 parent=self.gui,
                 message="No machine learning model is active, choose one under 'model configuration'!",
                 caption="No active model.",
-                style=wx.OK)
+                style=wx.OK,
+            )
             dia.ShowModal()
             return
         if self.get_preference("slice_y") > pcbnew.GetBoard().GetCopperLayerCount():
@@ -607,7 +632,8 @@ class MainPlugin(pcbnew.ActionPlugin):
                 parent=self.gui,
                 message=f"Reduce Slice Y. The board only has {pcbnew.GetBoard().GetCopperLayerCount()} layers. ",
                 caption="Bad Slice Y",
-                style=wx.OK)
+                style=wx.OK,
+            )
             dia.ShowModal()
             return
         slices = self.create_slices_mp()
@@ -626,6 +652,7 @@ class MainPlugin(pcbnew.ActionPlugin):
         def get_slice_position(slice_meta):
             splitted = slice_meta.split("_")
             return (int(splitted[0]), int(splitted[1]))
+
         slice_positions = [get_slice_position(slice[0]) for slice in slices]
         del slices
 
@@ -642,7 +669,8 @@ class MainPlugin(pcbnew.ActionPlugin):
                 parent=self.gui,
                 message="The server can't be reached, is not listening on the chosen port or busy. Wait 10 seconds?",
                 caption="Server not responding",
-                style=wx.OK | wx.CANCEL | wx.OK_DEFAULT)
+                style=wx.OK | wx.CANCEL | wx.OK_DEFAULT,
+            )
             if dia.ShowModal() == wx.ID_OK:
                 time.sleep(10)
             else:
@@ -651,7 +679,8 @@ class MainPlugin(pcbnew.ActionPlugin):
         print("sending slices to server and wait")
         resp = self.server_api.evaluate(
             send_slices,
-            (self.get_preference("slice_x"), self.get_preference("slice_y")))
+            (self.get_preference("slice_x"), self.get_preference("slice_y")),
+        )
         if resp is not False:
             resp = resp["data"]
         else:
@@ -671,9 +700,8 @@ class MainPlugin(pcbnew.ActionPlugin):
 
         ShowResultsDialog(self.gui, self, layers, slice_positions, resp).Show()
 
-
     def create_slices_mp(self):
-        """ Calls the "createSlicesMP" method.
+        """Calls the "createSlicesMP" method.
 
         Returns:
             list: A list of slices as byte object.
@@ -681,8 +709,9 @@ class MainPlugin(pcbnew.ActionPlugin):
         """
         return createSlicesMP(self)
 
-
-    def cluster_results(self, latent_vectors, mse_list, cluster_size, threshold, cluster_alg):
+    def cluster_results(
+        self, latent_vectors, mse_list, cluster_size, threshold, cluster_alg
+    ):
         """Clusters the latent vectors with K-Means.
 
         Args:
@@ -695,36 +724,49 @@ class MainPlugin(pcbnew.ActionPlugin):
             (List): The cluster indices of all slices in order.
              Only slices passing the threshold considered!
         """
-        latent_vectors = [latent_vector for latent_vector, mse in zip(latent_vectors, mse_list) if mse >= threshold]
+        latent_vectors = [
+            latent_vector
+            for latent_vector, mse in zip(latent_vectors, mse_list)
+            if mse >= threshold
+        ]
         if cluster_alg == ShowResultsDialog.Cluster_Alg.KMEANS:
             return sklearn.cluster.KMeans(
-                n_clusters=cluster_size,
-                max_iter=550).fit_predict(np.array(latent_vectors))
+                n_clusters=cluster_size, max_iter=550
+            ).fit_predict(np.array(latent_vectors))
         elif cluster_alg == ShowResultsDialog.Cluster_Alg.DBSCAN:
-            clustering = [i + 1 for i in sklearn.cluster.DBSCAN(n_jobs=-1).fit_predict(latent_vectors)] # clustering returns indices starting from -1
+            clustering = [
+                i + 1
+                for i in sklearn.cluster.DBSCAN(n_jobs=-1).fit_predict(latent_vectors)
+            ]  # clustering returns indices starting from -1
             return clustering
         elif cluster_alg == ShowResultsDialog.Cluster_Alg.OPTICS:
-            clustering = [i + 1 for i in sklearn.cluster.OPTICS(max_eps=400, n_jobs=-1).fit_predict(latent_vectors)] # clustering returns indices starting from -1
+            clustering = [
+                i + 1
+                for i in sklearn.cluster.OPTICS(max_eps=400, n_jobs=-1).fit_predict(
+                    latent_vectors
+                )
+            ]  # clustering returns indices starting from -1
             return clustering
-
-
 
     def Run(self):
         """
         Starts when clicking the plugin in pcbnews menu.
          Creates the gui and calls the initialize method.
         """
-        pcbnew_frame = list(filter(
-            lambda w: w.GetTitle().startswith('Pcbnew'),
-            wx.GetTopLevelWindows()))[0]
+        pcbnew_frame = list(
+            filter(lambda w: w.GetTitle().startswith("Pcbnew"), wx.GetTopLevelWindows())
+        )[0]
         pcbnew_manager = wx.aui.AuiManager.GetManager(pcbnew_frame)
-        pane = wx.aui.AuiPaneInfo()                     \
-                 .Caption(u"AnoPCB")                  \
-                 .Float()                               \
-                 .FloatingPosition(wx.Point(346, 268))  \
-                 .FloatingSize(wx.Size(300, 300))       \
-                 .MinSize(wx.Size(44, 36))            \
-                 .Layer(0).Center()
+        pane = (
+            wx.aui.AuiPaneInfo()
+            .Caption("AnoPCB")
+            .Float()
+            .FloatingPosition(wx.Point(346, 268))
+            .FloatingSize(wx.Size(300, 300))
+            .MinSize(wx.Size(44, 36))
+            .Layer(0)
+            .Center()
+        )
         self.gui = TrackGUI(pcbnew_frame, self)
         pcbnew_manager.AddPane(self.gui, pane)
         pcbnew_manager.Update()

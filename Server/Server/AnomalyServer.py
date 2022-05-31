@@ -38,19 +38,22 @@ def reshape_array(restored, new_shape, shape):
     Returns:
         3D byte-Array: The one-hot representation of the original array
     """
-    reshaped = np.zeros((len(restored), new_shape[0], new_shape[1], new_shape[2]), np.uint8)
+    reshaped = np.zeros(
+        (len(restored), new_shape[0], new_shape[1], new_shape[2]), np.uint8
+    )
     for i in prange(len(restored)):
         for j in range(shape[0]):
             for k in range(shape[1]):
                 v = restored[i][j][k]
-                reshaped[i][j][k][v-1] = 1 if v != 0 else 0
+                reshaped[i][j][k][v - 1] = 1 if v != 0 else 0
     return reshaped
 
 
 class AnomalyHandler(BaseHTTPRequestHandler):
     """The http-Handler handling the requests to the server. Expects requests according to the REST
-     interface specified in the "REST definition.txt" and sends responses accordingly.
+    interface specified in the "REST definition.txt" and sends responses accordingly.
     """
+
     def save_model(self, model_name, data, kind, comp):
         """Compiles and saves the model with the configuration specified in "data"
          under the name "model_name" using compile parameters in "comp".
@@ -64,7 +67,10 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             boolean: True if successfull, else False
         """
         try:
-            if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+            if (
+                os.path.split(os.getcwd())[1] == "Server"
+                or os.path.split(os.getcwd())[1] == "anopcb-server"
+            ):
                 os.chdir("models")
             if os.path.split(os.getcwd())[1] == "datasets":
                 os.chdir("../models")
@@ -74,9 +80,9 @@ class AnomalyHandler(BaseHTTPRequestHandler):
                     optimizer=comp.get("optimizer"),
                     loss=[comp.get("loss"), None, None],
                     metrics=comp.get("metrics"),
-                    loss_weights=[1.0, 0.0, 0.0]
-                    )
-                model.save(f"{model_name}.{SAVED_MODEL_FORMAT}", save_format='h5')
+                    loss_weights=[1.0, 0.0, 0.0],
+                )
+                model.save(f"{model_name}.{SAVED_MODEL_FORMAT}", save_format="h5")
                 return True
             elif kind == "h5":
                 data = base64.b64decode(data)
@@ -98,21 +104,20 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             print("Encountered Error: ", e.args)
             return False
 
-
     def add_to_dict(self, key, value, d, res):
         """adds the hashed Data to an Dictionary to remove Duples
 
         Args:
             key (int): hashed Data - eventuell unnötig, wenn man einfach in der funktion selbst hashed, stattdessen hash(value)
-            value (str): Single Value of the Data 
-            d (dict): Dictionary 
+            value (str): Single Value of the Data
+            d (dict): Dictionary
             res (list): final List without duplicates
 
         Returns:
             boolean: always True because it works in the reference of res
         """
         if not (key in d):
-            d.update({key:[value]})
+            d.update({key: [value]})
             res.append(value)
         elif value in d.get(key):
             return True
@@ -120,9 +125,9 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             d.get(key).append(value)
             res.append(value)
         return True
-    
+
     def flip_data(self, data, shape):
-        """Flips the dataset in x, y and x and y direction. 
+        """Flips the dataset in x, y and x and y direction.
 
         Args:
             data (List): a list of slices
@@ -131,29 +136,31 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         Returns:
             list: list with all Flipped slices
         """
-        restored = np.array([np.frombuffer(a.encode(), np.uint8).reshape(shape) for a in data])
-        #restored_0 = np.flip(restored, 0) <- doesn't work, returns nonsense
-        restored_y = np.flip(restored, 1) #y-direction
-        restored_x = np.flip(restored, 2) #x-direction
-        restored_xy = np.flip(restored_y, 2) #x-y-direction
+        restored = np.array(
+            [np.frombuffer(a.encode(), np.uint8).reshape(shape) for a in data]
+        )
+        # restored_0 = np.flip(restored, 0) <- doesn't work, returns nonsense
+        restored_y = np.flip(restored, 1)  # y-direction
+        restored_x = np.flip(restored, 2)  # x-direction
+        restored_xy = np.flip(restored_y, 2)  # x-y-direction
         res = []
-        
 
         for i in restored_xy:
             b = i.flatten().tobytes()
-            b_decoded = b.decode("utf-8", 'strict') # strict throws an error, if it fails. I wanna make sure, that'll be corect
+            b_decoded = b.decode(
+                "utf-8", "strict"
+            )  # strict throws an error, if it fails. I wanna make sure, that'll be corect
             res.append(b_decoded)
         for i in restored_y:
             b = i.flatten().tobytes()
-            b_decoded=b.decode("utf-8", 'strict')
+            b_decoded = b.decode("utf-8", "strict")
             res.append(b_decoded)
         for i in restored_x:
             b = i.flatten().tobytes()
-            b_decoded = b.decode("utf-8", 'strict')
+            b_decoded = b.decode("utf-8", "strict")
             res.append(b_decoded)
 
         return res
-
 
     def augment_data(self, data, shape):
         """augments the Data (removes Dubles and flips the slices)
@@ -169,10 +176,9 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         res = []
         for i in data:
             self.add_to_dict(hash(i), i, d, res)
-        
+
         res = self.flip_data(res, shape)
         return res
-
 
     def save_data(self, data, name, count, x_dim, y_dim, augment):
         """Saves the dataset. The saved datasets name is as follows:
@@ -190,7 +196,10 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             boolean: True if successfull, else False
         """
         try:
-            if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+            if (
+                os.path.split(os.getcwd())[1] == "Server"
+                or os.path.split(os.getcwd())[1] == "anopcb-server"
+            ):
                 os.chdir("datasets")
             if os.path.split(os.getcwd())[1] == "models":
                 os.chdir("../datasets")
@@ -209,7 +218,6 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             print("Encountered Error: ", e.args)
             return False
 
-
     def delete_data(self, name):
         """Deletes the dataset with name "name".
 
@@ -220,16 +228,18 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             boolean: True if successfull, else False
         """
         try:
-            if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+            if (
+                os.path.split(os.getcwd())[1] == "Server"
+                or os.path.split(os.getcwd())[1] == "anopcb-server"
+            ):
                 os.chdir("datasets")
             if os.path.split(os.getcwd())[1] == "models":
-                os.chdir("../datasets")    
+                os.chdir("../datasets")
             os.remove(f"{name}.json")
             return True
         except IOError as e:
             print("Encountered Error: ", e.args)
             return False
-
 
     def delete_model(self, name):
         """Deletes the model with name "name", except when it is currently active.
@@ -242,7 +252,10 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         """
         try:
             with self.server.session_lock:
-                if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+                if (
+                    os.path.split(os.getcwd())[1] == "Server"
+                    or os.path.split(os.getcwd())[1] == "anopcb-server"
+                ):
                     os.chdir("models")
                 if os.path.split(os.getcwd())[1] == "datasets":
                     os.chdir("../models")
@@ -275,14 +288,16 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         Returns:
             List: names of datasets
         """
-        if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+        if (
+            os.path.split(os.getcwd())[1] == "Server"
+            or os.path.split(os.getcwd())[1] == "anopcb-server"
+        ):
             os.chdir("datasets")
         if os.path.split(os.getcwd())[1] == "models":
             os.chdir("../datasets")
         datasets = os.listdir()
         datasets = [os.path.splitext(x)[0] for x in datasets]
         return datasets
-
 
     def get_model(self, name):
         """Loads the model with name "name"
@@ -292,28 +307,36 @@ class AnomalyHandler(BaseHTTPRequestHandler):
 
         Returns:
             model: tensorflow model
-        """        
-        if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+        """
+        if (
+            os.path.split(os.getcwd())[1] == "Server"
+            or os.path.split(os.getcwd())[1] == "anopcb-server"
+        ):
             os.chdir("models")
         if os.path.split(os.getcwd())[1] == "datasets":
             os.chdir("../models")
         model = tf.keras.models.load_model(f"{name}.{SAVED_MODEL_FORMAT}")
         return model
 
-
     def get_available_models(self):
         """Gets the currently available models.
 
         Returns:
             list: names of available models
-        """        
-        if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+        """
+        if (
+            os.path.split(os.getcwd())[1] == "Server"
+            or os.path.split(os.getcwd())[1] == "anopcb-server"
+        ):
             os.chdir("models")
         if os.path.split(os.getcwd())[1] == "datasets":
             os.chdir("../models")
-        files = [os.path.splitext(x)[0] for x in os.listdir() if os.path.splitext(x)[1] == f".{SAVED_MODEL_FORMAT}"]
+        files = [
+            os.path.splitext(x)[0]
+            for x in os.listdir()
+            if os.path.splitext(x)[1] == f".{SAVED_MODEL_FORMAT}"
+        ]
         return files
-
 
     def set_active_model(self, model_name, session):
         """Sets the currently active model.
@@ -323,7 +346,7 @@ class AnomalyHandler(BaseHTTPRequestHandler):
 
         Returns:
             boolean: True if successfull, else False
-        """        
+        """
         self.update_session_time(session)
         try:
             model = self.get_model(model_name)
@@ -337,7 +360,15 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             print("Encountered Error: ", e.args)
             return False
         with self.server.session_lock:
-            if list(filter(lambda x: x[0][0]==model_name and x[2], self.server.sessions.values())) != []:
+            if (
+                list(
+                    filter(
+                        lambda x: x[0][0] == model_name and x[2],
+                        self.server.sessions.values(),
+                    )
+                )
+                != []
+            ):
                 return False
             try:
                 mod_ses = self.server.sessions[session]
@@ -347,21 +378,27 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             self.server.sessions[session] = mod_ses
             return True
 
-
     def get_active_model(self, session):
         """Gets the currently active model.
 
         Returns:
             tuple: name and config of active model
-        """     
+        """
         self.update_session_time(session)
-        with self.server.session_lock:   
-            conf = self.server.sessions[session][0][1] if session in self.server.sessions.keys() else None
+        with self.server.session_lock:
+            conf = (
+                self.server.sessions[session][0][1]
+                if session in self.server.sessions.keys()
+                else None
+            )
             if conf != None:
                 conf = conf.to_json()
-            name = self.server.sessions[session][0][0] if session in self.server.sessions.keys() else None
+            name = (
+                self.server.sessions[session][0][0]
+                if session in self.server.sessions.keys()
+                else None
+            )
             return (name, conf)
-
 
     def load_data(self, datasets, batch_size):
         """Loads a batch of size batch_size with random samples from datasets.
@@ -373,7 +410,10 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         Returns:
             Result: data as numpy array if successful, else False
         """
-        if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+        if (
+            os.path.split(os.getcwd())[1] == "Server"
+            or os.path.split(os.getcwd())[1] == "anopcb-server"
+        ):
             os.chdir("datasets")
         if os.path.split(os.getcwd())[1] == "models":
             os.chdir("../datasets")
@@ -390,13 +430,14 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         for name in datasets:
             with open(f"{name}.json", "r") as f:
                 slices += json.load(f)
-        restored = np.array([np.frombuffer(a.encode(), np.uint8).reshape(shape) for a in slices])
+        restored = np.array(
+            [np.frombuffer(a.encode(), np.uint8).reshape(shape) for a in slices]
+        )
         new_shape = (shape[0], shape[1], NR_CHANNELS)
         if not (batch_size < 1 or batch_size > len(slices)):
             indices = np.random.choice(len(restored), batch_size, replace=False)
             restored = restored[indices]
         return reshape_array(restored, new_shape, shape)
-
 
     def reconstruct(self, data, shape):
         """Converts "data". which is a string representation of the slice data and converts
@@ -409,10 +450,11 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         Returns:
             array: correctly formatted input array for the ML model
         """
-        restored = np.array([np.frombuffer(a.encode(), np.uint8).reshape(shape) for a in data])
+        restored = np.array(
+            [np.frombuffer(a.encode(), np.uint8).reshape(shape) for a in data]
+        )
         new_shape = (shape[0], shape[1], NR_CHANNELS)
         return reshape_array(restored, new_shape, shape)
-
 
     def test(self, datasets, batch_size, session):
         """Evaluates the model on batch of size batch_size of random samples
@@ -427,12 +469,28 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         """
         self.update_session_time(session)
         with self.server.session_lock:
-            active_model_name = self.server.sessions[session][0][0] if session in self.server.sessions.keys() else None
-            active_model = self.server.sessions[session][0][1] if session in self.server.sessions.keys() else None
+            active_model_name = (
+                self.server.sessions[session][0][0]
+                if session in self.server.sessions.keys()
+                else None
+            )
+            active_model = (
+                self.server.sessions[session][0][1]
+                if session in self.server.sessions.keys()
+                else None
+            )
 
-            if list(filter(lambda x: x[0][0]==active_model_name and x[2], self.server.sessions.values())) != []:
+            if (
+                list(
+                    filter(
+                        lambda x: x[0][0] == active_model_name and x[2],
+                        self.server.sessions.values(),
+                    )
+                )
+                != []
+            ):
                 return False
-            
+
             if active_model is None:
                 print("No active ML-Model!")
                 return False
@@ -449,7 +507,6 @@ class AnomalyHandler(BaseHTTPRequestHandler):
                 print("Encountered Error: ", e.args)
                 return False
 
-
     def evaluate(self, data, shape, session):
         """Evaluates "data" with shape "shape" on the currently active model.
 
@@ -462,17 +519,35 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         """
         self.update_session_time(session)
         with self.server.session_lock:
-            active_model_name = self.server.sessions[session][0][0] if session in self.server.sessions.keys() else None
-            active_model = self.server.sessions[session][0][1] if session in self.server.sessions.keys() else None
+            active_model_name = (
+                self.server.sessions[session][0][0]
+                if session in self.server.sessions.keys()
+                else None
+            )
+            active_model = (
+                self.server.sessions[session][0][1]
+                if session in self.server.sessions.keys()
+                else None
+            )
 
-            if list(filter(lambda x: x[0][0]==active_model_name and x[2], self.server.sessions.values())) != []:
+            if (
+                list(
+                    filter(
+                        lambda x: x[0][0] == active_model_name and x[2],
+                        self.server.sessions.values(),
+                    )
+                )
+                != []
+            ):
                 return False
-            
+
             if active_model is None:
                 print("No active ML-Model!")
                 return False
             if active_model.input.shape[1:3] != shape:
-                print(f"Shape {shape} of slices does not match model input {active_model.input.shape}!")
+                print(
+                    f"Shape {shape} of slices does not match model input {active_model.input.shape}!"
+                )
                 return False
             try:
                 inp = self.reconstruct(data, shape)
@@ -485,7 +560,6 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 print("Encountered Error: ", e.args)
                 return False
-
 
     def update_session_time(self, session):
         try:
@@ -512,10 +586,26 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         """
         self.update_session_time(session)
         with self.server.session_lock:
-            active_model_name = self.server.sessions[session][0][0] if session in self.server.sessions.keys() else None
-            active_model = self.server.sessions[session][0][1] if session in self.server.sessions.keys() else None
-            
-            if list(filter(lambda x: x[0][0]==active_model_name and x[2], self.server.sessions.values())) != []:
+            active_model_name = (
+                self.server.sessions[session][0][0]
+                if session in self.server.sessions.keys()
+                else None
+            )
+            active_model = (
+                self.server.sessions[session][0][1]
+                if session in self.server.sessions.keys()
+                else None
+            )
+
+            if (
+                list(
+                    filter(
+                        lambda x: x[0][0] == active_model_name and x[2],
+                        self.server.sessions.values(),
+                    )
+                )
+                != []
+            ):
                 return False
             self.server.sessions[session][2] = True
             try:
@@ -535,8 +625,16 @@ class AnomalyHandler(BaseHTTPRequestHandler):
                         if data is False:
                             return False
                         ind = np.random.choice(len(data), len(data), replace=False)
-                        b1 = train_batch_size if train_batch_size > 0 and train_batch_size < len(data) else len(data)
-                        b2 = b1 + val_batch_size if b1 + val_batch_size < len(data) else len(data)
+                        b1 = (
+                            train_batch_size
+                            if train_batch_size > 0 and train_batch_size < len(data)
+                            else len(data)
+                        )
+                        b2 = (
+                            b1 + val_batch_size
+                            if b1 + val_batch_size < len(data)
+                            else len(data)
+                        )
                         ind1 = ind[0:b1]
                         ind2 = ind[b1:b2]
                         train_data = data[ind1]
@@ -554,22 +652,26 @@ class AnomalyHandler(BaseHTTPRequestHandler):
                     metrics = []
                     for epi in range(train_ep):
                         print(f"Epoch {epi} of {train_ep}.")
-                        sample = train_data[np.random.choice(len(train_data), SAMPLES_PER_BATCH, replace=False)]
+                        sample = train_data[
+                            np.random.choice(
+                                len(train_data), SAMPLES_PER_BATCH, replace=False
+                            )
+                        ]
                         if noval:
-                            hs = active_model.fit(
-                                x=sample,
-                                y=sample).history
+                            hs = active_model.fit(x=sample, y=sample).history
                             loss = hs["loss"][-1]
                             metrics.append((str(loss), "0"))
                         else:
-                            val_sample = val_data[np.random.choice(len(val_data), SAMPLES_PER_BATCH, replace=False)]
-                            hs = active_model.fit(
-                                x=sample,
-                                y=sample).history
+                            val_sample = val_data[
+                                np.random.choice(
+                                    len(val_data), SAMPLES_PER_BATCH, replace=False
+                                )
+                            ]
+                            hs = active_model.fit(x=sample, y=sample).history
                             loss = hs["loss"][-1]
                             val_loss = active_model.evaluate(
-                                x=val_sample,
-                                y=val_sample)[0]
+                                x=val_sample, y=val_sample
+                            )[0]
                             metrics.append((str(loss), str(val_loss)))
                             if val_loss > lastloss:
                                 patience += 1
@@ -579,9 +681,12 @@ class AnomalyHandler(BaseHTTPRequestHandler):
                                 break
                             lastloss = val_loss
                         now = time.time()
-                        if now - start > train_min*60:
+                        if now - start > train_min * 60:
                             break
-                    if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+                    if (
+                        os.path.split(os.getcwd())[1] == "Server"
+                        or os.path.split(os.getcwd())[1] == "anopcb-server"
+                    ):
                         os.chdir("models")
                     return metrics
                 except ValueError as e:
@@ -595,7 +700,6 @@ class AnomalyHandler(BaseHTTPRequestHandler):
                     return False
             finally:
                 self.server.sessions[session][2] = False
-
 
     def train(self, data, shape, fit):
         """(DEPRECATED) Trains the currently active model on "data" with shape "shape" using
@@ -611,21 +715,27 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         """
         if self.server.active_model is None:
             print("No active ML-Model!")
-            return False    
+            return False
         try:
             inp = self.reconstruct(data, shape)
             metrics = self.server.active_model.fit(
-                x=inp, 
-                y=inp, 
-                batch_size=fit.get("batch_size"), 
-                epochs=fit.get("epochs") if fit.get("epochs") is not None else 1, 
-                shuffle=fit.get("shuffle") if fit.get("shuffle") is not None else True
+                x=inp,
+                y=inp,
+                batch_size=fit.get("batch_size"),
+                epochs=fit.get("epochs") if fit.get("epochs") is not None else 1,
+                shuffle=fit.get("shuffle") if fit.get("shuffle") is not None else True,
             )
-            if os.path.split(os.getcwd())[1] == "Server" or os.path.split(os.getcwd())[1] == "anopcb-server":
+            if (
+                os.path.split(os.getcwd())[1] == "Server"
+                or os.path.split(os.getcwd())[1] == "anopcb-server"
+            ):
                 os.chdir("models")
             if os.path.split(os.getcwd())[1] == "datasets":
                 os.chdir("../models")
-            self.server.active_model.save(f"{self.server.active_model_name}.{SAVED_MODEL_FORMAT}", save_format='h5')
+            self.server.active_model.save(
+                f"{self.server.active_model_name}.{SAVED_MODEL_FORMAT}",
+                save_format="h5",
+            )
             for met in metrics.history:
                 vals = metrics.history[met]
                 for i in range(len(vals)):
@@ -641,25 +751,21 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             print("Encountered Error: ", e.args)
             return False
 
-
     def send_bad_response(self):
-        """Sends a http 400 response.
-        """   
+        """Sends a http 400 response."""
         self.send_response(400)
         self.end_headers()
 
-
     def do_GET(self):
-        """Handles GET-requests.
-        """
-        length = int(self.headers['Content-Length'])
+        """Handles GET-requests."""
+        length = int(self.headers["Content-Length"])
         payload_raw = self.rfile.read(length)
         payload = json.loads(payload_raw)
         if payload.get("type") is None:
             self.send_bad_response()
         elif payload["type"] == 1:
             models = self.get_available_models()
-            resp = {"data" : models}
+            resp = {"data": models}
             resp = json.dumps(resp).encode()
             self.send_response(200)
             self.send_header("Content-Type", "json")
@@ -670,7 +776,7 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             if payload.get("session") is not None:
                 session = payload["session"]
                 model = self.get_active_model(session)
-                resp = {"data" : model}
+                resp = {"data": model}
                 resp = json.dumps(resp).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "json")
@@ -684,7 +790,7 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             self.end_headers()
         elif payload["type"] == 10:
             datasets = self.get_data()
-            resp = {"data" : datasets}
+            resp = {"data": datasets}
             resp = json.dumps(resp).encode()
             self.send_response(200)
             self.send_header("Content-Type", "json")
@@ -694,24 +800,27 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         else:
             self.send_bad_response()
 
-
     def do_POST(self):
-        """Handles POST-requests.
-        """
-        length = int(self.headers['Content-Length'])
+        """Handles POST-requests."""
+        length = int(self.headers["Content-Length"])
         payload_raw = self.rfile.read(length)
         payload = json.loads(payload_raw)
         if payload.get("type") is None:
             self.send_bad_response()
         elif payload["type"] == 2:
-            if payload.get("datasets") is not None and payload.get("batch_size") is not None and payload.get("train_time") is not None and payload.get("session") is not None:
+            if (
+                payload.get("datasets") is not None
+                and payload.get("batch_size") is not None
+                and payload.get("train_time") is not None
+                and payload.get("session") is not None
+            ):
                 datasets = payload["datasets"]
                 batch_size = payload["batch_size"]
                 train_time = payload["train_time"]
                 session = payload["session"]
                 resp = self.new_train(datasets, batch_size, train_time, session)
                 if resp != False:
-                    resp = {"data" : resp}
+                    resp = {"data": resp}
                     resp = json.dumps(resp).encode()
                     self.send_response(200)
                     self.send_header("Content-Type", "json")
@@ -723,13 +832,17 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             else:
                 self.send_bad_response()
         elif payload["type"] == 3:
-            if payload.get("data") is not None and payload.get("shape") is not None and payload.get("session") is not None:
+            if (
+                payload.get("data") is not None
+                and payload.get("shape") is not None
+                and payload.get("session") is not None
+            ):
                 data = payload["data"]
                 shape = payload["shape"]
                 session = payload["session"]
                 resp = self.evaluate(data, shape, session)
                 if resp != False:
-                    resp = {"data" : resp}
+                    resp = {"data": resp}
                     resp = json.dumps(resp).encode()
                     self.send_response(200)
                     self.send_header("Content-Type", "json")
@@ -752,13 +865,17 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             else:
                 self.send_bad_response()
         elif payload["type"] == 11:
-            if payload.get("datasets") is not None and payload.get("batch_size") is not None and payload.get("session") is not None:
+            if (
+                payload.get("datasets") is not None
+                and payload.get("batch_size") is not None
+                and payload.get("session") is not None
+            ):
                 datasets = payload["datasets"]
                 batch_size = payload["batch_size"]
                 session = payload["session"]
                 resp = self.test(datasets, batch_size, session)
                 if resp != False:
-                    resp = {"data" : resp}
+                    resp = {"data": resp}
                     resp = json.dumps(resp).encode()
                     self.send_response(200)
                     self.send_header("Content-Type", "json")
@@ -772,7 +889,7 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         elif payload["type"] == 12:
             resp = self.get_session()
             if resp != False:
-                resp = {"data" : resp}
+                resp = {"data": resp}
                 resp = json.dumps(resp).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "json")
@@ -784,17 +901,20 @@ class AnomalyHandler(BaseHTTPRequestHandler):
         else:
             self.send_bad_response()
 
-
     def do_PUT(self):
-        """Handles PUT-requests.
-        """
-        length = int(self.headers['Content-Length'])
+        """Handles PUT-requests."""
+        length = int(self.headers["Content-Length"])
         payload_raw = self.rfile.read(length)
         payload = json.loads(payload_raw)
         if payload.get("type") is None:
             self.send_bad_response()
         elif payload["type"] == 0:
-            if payload.get("data") is not None and payload.get("model") is not None and payload.get("comp") is not None and payload.get("kind") is not None:
+            if (
+                payload.get("data") is not None
+                and payload.get("model") is not None
+                and payload.get("comp") is not None
+                and payload.get("kind") is not None
+            ):
                 data = payload["data"]
                 model = payload["model"]
                 comp = payload["comp"]
@@ -819,7 +939,14 @@ class AnomalyHandler(BaseHTTPRequestHandler):
             else:
                 self.send_bad_response()
         elif payload["type"] == 8:
-            if payload.get("data") is not None and payload.get("board") is not None and payload.get("count") is not None and payload.get("x_dim") is not None and payload.get("y_dim") is not None and payload.get("aug") is not None:
+            if (
+                payload.get("data") is not None
+                and payload.get("board") is not None
+                and payload.get("count") is not None
+                and payload.get("x_dim") is not None
+                and payload.get("y_dim") is not None
+                and payload.get("aug") is not None
+            ):
                 data = payload["data"]
                 name = payload["board"]
                 count = payload["count"]
@@ -861,8 +988,8 @@ class AnomalyHandler(BaseHTTPRequestHandler):
 
 
 class BaseServer(HTTPServer):
-    """Subclass of HTTPServer modified to provide a ML-Model to be accesed by the http-Handler.
-    """
+    """Subclass of HTTPServer modified to provide a ML-Model to be accesed by the http-Handler."""
+
     def __init__(self, adress, handler):
         """Initializes the BaseServer.
 
@@ -880,14 +1007,14 @@ class BaseServer(HTTPServer):
         timer = Thread(target=self.scheduled_dead_session_check)
         timer.setDaemon(True)
         timer.start()
-    
+
     def scheduled_dead_session_check(self):
         while True:
             with self.session_lock:
                 tmp = []
                 cur_time = int(time.time())
                 for x in self.sessions.keys():
-                    if self.sessions[x][1] + 30*60 < cur_time:
+                    if self.sessions[x][1] + 30 * 60 < cur_time:
                         tmp.append(x)
                 for x in tmp:
                     self.sessions.pop(x)
@@ -896,8 +1023,9 @@ class BaseServer(HTTPServer):
 
 class MainServer:
     """The Main Server class. Can be started with "start" method and stopped with the "close" method.
-     Is automatically started if the module is run.
-    """    
+    Is automatically started if the module is run.
+    """
+
     def __init__(self, port, ip_override):
         """Initializes the main server.
 
@@ -920,32 +1048,33 @@ class MainServer:
         self._server.shutdown()
         self._thread = None
 
+
 def main(port, ip_override=IP, save_local=False):
     if not save_local:
-        if os.name == 'nt':
+        if os.name == "nt":
             # windows
-            project_path = r'%APPDATA%\.anopcb'
+            project_path = r"%APPDATA%\.anopcb"
             project_path = os.path.expandvars(project_path)
-        elif os.name == 'posix':
+        elif os.name == "posix":
             # linux
-            project_path = '~/.anopcb/'
+            project_path = "~/.anopcb/"
             project_path = os.path.expanduser(project_path)
         else:
             print("Not compatible OS detected. Please use windows or linux.")
             return
-        project_path_2 = os.path.join(project_path, 'anopcb-server')
+        project_path_2 = os.path.join(project_path, "anopcb-server")
         try:
             os.mkdir(project_path)
             # if this passes, no data was put in place yet
             os.mkdir(project_path_2)
-            datasets_path = os.path.join(project_path_2, 'datasets')
+            datasets_path = os.path.join(project_path_2, "datasets")
             os.mkdir(datasets_path)
-            models_path = os.path.join(project_path_2, 'models')
+            models_path = os.path.join(project_path_2, "models")
             os.mkdir(models_path)
             package_path = os.path.split(__file__)[0]
-            for filename in os.scandir(os.path.join(package_path, 'datasets')):
+            for filename in os.scandir(os.path.join(package_path, "datasets")):
                 shutil.copy2(filename.path, datasets_path)
-            for filename in os.scandir(os.path.join(package_path, 'models')):
+            for filename in os.scandir(os.path.join(package_path, "models")):
                 shutil.copy2(filename.path, models_path)
         except Exception:
             pass
@@ -954,20 +1083,22 @@ def main(port, ip_override=IP, save_local=False):
     main_server.start()
     print(f"Server serving at ({ip_override}, {port}{' local' if save_local else ''}).")
 
+
 def main2():
     arguments = argv.copy()
     try:
-        arguments.remove('--local')
+        arguments.remove("--local")
         save_local = True
     except Exception:
         save_local = False
-    
-    if(len(arguments)==3):
+
+    if len(arguments) == 3:
         main(int(arguments[2]), arguments[1], save_local=save_local)
-    elif(len(arguments)==2):
+    elif len(arguments) == 2:
         main(int(arguments[1]), save_local=save_local)
     else:
         print("usage: <programm name> <port> | <programm name> <ip-address> <port>")
+
 
 if __name__ == "__main__":
     main2()

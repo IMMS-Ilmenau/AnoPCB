@@ -1,6 +1,7 @@
 """Contains the brighten function used by the Show_layers- and ShowResultsDialog"""
 from numba import prange, njit
 
+
 @njit(parallel=True)
 def brighten(layers):
     """
